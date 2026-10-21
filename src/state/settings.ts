@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   drinkReminder: { enabled: true, intervalMinutes: 60 },
   eatReminder: { enabled: true, intervalMinutes: 240 },
   catPosition: null,
+  pixelCat: false,
 };
 
 export function sanitizeInterval(value: unknown, fallback: number): number {
@@ -47,14 +48,28 @@ export function sanitizeSettings(raw: unknown): AppSettings {
     drinkReminder: sanitizeReminder(o["drinkReminder"], DEFAULT_SETTINGS.drinkReminder),
     eatReminder: sanitizeReminder(o["eatReminder"], DEFAULT_SETTINGS.eatReminder),
     catPosition,
+    pixelCat: typeof o["pixelCat"] === "boolean" ? o["pixelCat"] : DEFAULT_SETTINGS.pixelCat,
   };
 }
+
+/**
+ * Marks that stored settings were rescued from the pixel-skin experiments:
+ * the classic cat is forced back on exactly once, then is never overruled.
+ */
+const PIXEL_RESET_KEY = "mochi.pixel-reset.v1";
 
 export function loadSettings(): AppSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw === null) return { ...DEFAULT_SETTINGS };
-    return sanitizeSettings(JSON.parse(raw));
+    const settings = sanitizeSettings(JSON.parse(raw));
+    if (localStorage.getItem(PIXEL_RESET_KEY) === null) {
+      const restored = { ...settings, pixelCat: DEFAULT_SETTINGS.pixelCat };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
+      localStorage.setItem(PIXEL_RESET_KEY, "1");
+      return restored;
+    }
+    return settings;
   } catch (error) {
     console.warn("mochi: failed to load settings, using defaults", error);
     return { ...DEFAULT_SETTINGS };

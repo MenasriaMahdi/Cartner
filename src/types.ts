@@ -14,6 +14,8 @@ export interface AppSettings {
   drinkReminder: ReminderSettings;
   eatReminder: ReminderSettings;
   catPosition: CatPosition | null;
+  /** 8-bit pixel sprite instead of the classic hand-drawn cat. */
+  pixelCat: boolean;
 }
 
 export interface Task {

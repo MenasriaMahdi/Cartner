@@ -22,12 +22,14 @@ const drinkEnabled = requireInput("drink-enabled");
 const drinkInterval = requireInput("drink-interval");
 const eatEnabled = requireInput("eat-enabled");
 const eatInterval = requireInput("eat-interval");
+const pixelCat = requireInput("pixel-cat");
 
 function syncForm(s: AppSettings): void {
   drinkEnabled.checked = s.drinkReminder.enabled;
   drinkInterval.value = String(s.drinkReminder.intervalMinutes);
   eatEnabled.checked = s.eatReminder.enabled;
   eatInterval.value = String(s.eatReminder.intervalMinutes);
+  pixelCat.checked = s.pixelCat;
 }
 
 syncForm(loadSettings());
@@ -48,6 +50,7 @@ async function saveAndClose(): Promise<void> {
       enabled: eatEnabled.checked,
       intervalMinutes: sanitizeInterval(eatInterval.value, base.eatReminder.intervalMinutes),
     },
+    pixelCat: pixelCat.checked,
   };
   saveSettings(next);
   try {

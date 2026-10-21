@@ -5,6 +5,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { startIdleCycle } from "./cat";
 import { initContextMenu, setMenuChecks } from "./contextMenu";
 import { initDragging } from "./drag";
+import { installPixelCat } from "./pixelCat";
 import { applyReminderSettings } from "./reminders";
 import { initializeTaskReminders } from "./taskReminders";
 import {
@@ -24,6 +25,10 @@ if (savedPosition !== null) {
   void wnd
     .setPosition(new PhysicalPosition(Math.round(savedPosition.x), Math.round(savedPosition.y)))
     .catch((error) => console.warn("mochi: could not restore cat position", error));
+}
+
+function applySkin(s: AppSettings): void {
+  document.body.classList.toggle("pixel", s.pixelCat);
 }
 
 function refreshMenuChecks(): void {
@@ -69,9 +74,12 @@ initDragging((position) => {
 applyReminderSettings(settings);
 initializeTaskReminders();
 startIdleCycle();
+installPixelCat();
+applySkin(settings);
 
 void listen(SETTINGS_CHANGED_EVENT, (event) => {
   settings = sanitizeSettings(event.payload);
   refreshMenuChecks();
   applyReminderSettings(settings);
+  applySkin(settings);
 }).catch((error) => console.warn("mochi: could not listen for settings", error));
