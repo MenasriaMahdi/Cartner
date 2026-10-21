@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mochi Settings</title>
+    <link rel="stylesheet" href="/src/settings.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <h1>🐱 Mochi</h1>
+      <p class="subtitle">Little reminders from your desk cat.</p>
+      <section class="reminder-row">
+        <label class="toggle">
+          <input type="checkbox" id="drink-enabled" />
+          <span>💧 Drink reminder</span>
+        </label>
+        <label class="interval">
+          every <input type="number" id="drink-interval" min="5" max="720" step="5" /> min
+        </label>
+      </section>
+      <section class="reminder-row">
+        <label class="toggle">
+          <input type="checkbox" id="eat-enabled" />
+          <span>🍖 Eat reminder</span>
+        </label>
+        <label class="interval">
+          every <input type="number" id="eat-interval" min="5" max="720" step="5" /> min
+        </label>
+      </section>
+      <footer>
+        <button type="button" id="save" class="primary">Save</button>
+        <button type="button" id="close">Close</button>
+      </footer>
+      <p class="hint">Changes apply immediately 🐾</p>
+    </main>
+    <script type="module" src="/src/main-settings.ts"></script>
+  </body>
+</html>

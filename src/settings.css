@@ -1,0 +1,100 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #fff8ef;
+  color: #3d3129;
+  font: 13px/1.45 system-ui, sans-serif;
+}
+
+.panel {
+  padding: 14px 16px;
+}
+
+h1 {
+  font-size: 17px;
+  margin: 0 0 2px;
+}
+
+.subtitle {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  color: #8a7867;
+}
+
+.reminder-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  border-top: 1px solid #f0decb;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toggle input {
+  accent-color: #e0913f;
+  width: 15px;
+  height: 15px;
+}
+
+.interval {
+  font-size: 12px;
+  color: #6d5c4c;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.interval input {
+  width: 62px;
+  padding: 3px 6px;
+  border: 1px solid #e0cbb2;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+}
+
+footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+footer button {
+  padding: 6px 14px;
+  border: 1px solid #e0cbb2;
+  border-radius: 8px;
+  background: #fff;
+  font: 600 12.5px system-ui, sans-serif;
+  color: #3d3129;
+  cursor: pointer;
+}
+
+footer button:hover {
+  background: #ffeedd;
+}
+
+footer button.primary {
+  background: #f0964a;
+  border-color: #e0913f;
+  color: #fff;
+}
+
+footer button.primary:hover {
+  background: #e0853a;
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: #8a7867;
+}
