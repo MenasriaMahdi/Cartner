@@ -1,61 +1,135 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
 * {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
+.widget {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #fff8ef;
+  border: 1.5px solid #e8c39e;
+  border-radius: 14px;
+  box-shadow: 0 10px 26px rgba(120, 80, 30, 0.28);
+  overflow: hidden;
+}
+
+.widget-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px 8px 12px;
+  background: #ffeedd;
+  border-bottom: 1px solid #f0decb;
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.widget-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #3d3129;
+}
+
+#widget-close {
+  border: 0;
+  background: transparent;
+  color: #8a7867;
+  font-size: 13px;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+#widget-close:hover {
+  background: #fdeeee;
+  color: #c0392b;
+}
+
+body {
   color: #3d3129;
   font: 13px/1.45 system-ui, sans-serif;
 }
 
 .panel {
-  padding: 12px 14px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  flex: 1;
+  min-height: 0;
 }
 
-h1 {
-  font-size: 15px;
-  margin: 0;
-}
-
-.add-row {
+.composer {
   display: flex;
+  flex-direction: column;
   gap: 6px;
   margin: 10px 0 2px;
 }
 
-.add-row input {
-  padding: 5px 8px;
-  border: 1px solid #e0cbb2;
-  border-radius: 6px;
-  background: #fff;
+.composer-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.composer input,
+#task-list li.editing .edit-input {
   font: inherit;
+  color: inherit;
+  padding: 7px 11px;
+  border: 1.5px solid #e0cbb2;
+  border-radius: 10px;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.composer input:focus,
+#task-list li.editing .edit-input:focus {
+  border-color: #f0964a;
+  box-shadow: 0 0 0 3px rgba(240, 150, 74, 0.18);
+}
+
+.composer input::placeholder {
+  color: #b7a58f;
 }
 
 #task-title {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
 #task-due {
-  width: 168px;
+  flex: 1;
+  min-width: 0;
+  color-scheme: light;
 }
 
 button.primary {
-  padding: 5px 11px;
-  border: 1px solid #e0913f;
-  border-radius: 8px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
   background: #f0964a;
-  font: 600 13px system-ui, sans-serif;
+  font: 600 15px system-ui, sans-serif;
   color: #fff;
   cursor: pointer;
 }
 
 button.primary:hover {
   background: #e0853a;
+}
+
+button.primary:active {
+  background: #d0782f;
 }
 
 .empty {
@@ -92,6 +166,7 @@ button.primary:hover {
   flex: 1;
   min-width: 0;
   word-break: break-word;
+  cursor: pointer;
 }
 
 #task-list li.done {
@@ -140,6 +215,59 @@ button.primary:hover {
   color: #c0392b;
   background: #fdeeee;
   border-radius: 6px;
+}
+
+.mini {
+  border: 1px solid #e0cbb2;
+  background: #fff;
+  border-radius: 8px;
+  color: #6d5c4c;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mini:hover {
+  background: #ffeedd;
+}
+
+.mini.cancel:hover {
+  background: #fdeeee;
+  color: #c0392b;
+}
+
+.mini.save {
+  border-color: #b7dfc0;
+  color: #2f9e44;
+}
+
+.mini.save:hover {
+  background: #ecf7ef;
+}
+
+#task-list li.editing {
+  flex-wrap: wrap;
+  row-gap: 6px;
+  border-color: #f0964a;
+  box-shadow: 0 0 0 3px rgba(240, 150, 74, 0.12);
+}
+
+.edit-title {
+  width: 100%;
+}
+
+.when-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.edit-due {
+  flex: 1;
+  min-width: 0;
 }
 
 .hint {

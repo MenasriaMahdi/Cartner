@@ -36,10 +36,14 @@ function sanitizeTask(raw: unknown): Task | null {
 export function sanitizeTasks(raw: unknown): Task[] {
   const list = Array.isArray(raw) ? raw : [];
   const tasks: Task[] = [];
+  const seenIds = new Set<string>();
   for (const item of list) {
     if (tasks.length >= MAX_TASKS) break;
     const task = sanitizeTask(item);
-    if (task !== null) tasks.push(task);
+    // Deduplicate by id: garbage from earlier builds must not stack up.
+    if (task === null || seenIds.has(task.id)) continue;
+    seenIds.add(task.id);
+    tasks.push(task);
   }
   return tasks;
 }

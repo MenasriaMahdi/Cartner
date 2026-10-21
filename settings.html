@@ -4,6 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mochi Settings</title>
+    <script>
+      (function () {
+        function report(kind, detail) {
+          try {
+            window.__TAURI_INTERNALS__.invoke("log_line", { message: kind + ": " + detail });
+          } catch (x) {
+            /* reporting unavailable */
+          }
+        }
+        window.addEventListener("error", function (e) {
+          report("js-error", e.message + " @ " + (e.filename || "?") + ":" + (e.lineno || 0));
+        });
+        window.addEventListener("unhandledrejection", function (e) {
+          report("js-reject", String(e.reason));
+        });
+      })();
+    </script>
     <link rel="stylesheet" href="/src/settings.css" />
   </head>
   <body>
