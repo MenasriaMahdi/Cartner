@@ -11,36 +11,51 @@ fn exit_app(app: tauri::AppHandle) {
 
 #[tauri::command]
 fn toggle_settings_window(app: tauri::AppHandle) {
+    println!("mochi: settings toggle reached");
     if let Some(window) = app.get_webview_window("settings") {
         if window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         } else {
+            println!("mochi: showing settings window");
             let _ = window.show();
             let _ = window.set_focus();
         }
+    } else {
+        println!("mochi: settings window not found");
     }
 }
 
-/// The tasks window is created on demand and destroyed when closed,
-/// so it never holds memory while hidden.
+/// Toggleable and created on a *background thread*: building a webview
+/// window from a synchronous command on the main thread deadlocks the
+/// event loop. The window is destroyed on close, so it never holds
+/// memory while hidden.
 #[tauri::command]
 fn toggle_tasks_window(app: tauri::AppHandle) {
-    if let Some(window) = app.get_webview_window("tasks") {
-        let _ = window.show();
-        let _ = window.set_focus();
-        return;
-    }
-    if let Err(error) = tauri::WebviewWindowBuilder::new(
-        &app,
-        "tasks",
-        tauri::WebviewUrl::App("tasks.html".into()),
-    )
-    .title("Mochi Tasks")
-    .inner_size(340.0, 440.0)
-    .min_inner_size(260.0, 300.0)
-    .build()
-    {
-        eprintln!("mochi: failed to open tasks window: {error}");
+    match app.get_webview_window("tasks") {
+        Some(window) => {
+            if window.is_visible().unwrap_or(false) {
+                let _ = window.close();
+            } else {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }
+        None => {
+            std::thread::spawn(move || {
+                if let Err(error) = tauri::WebviewWindowBuilder::new(
+                    &app,
+                    "tasks",
+                    tauri::WebviewUrl::App("tasks.html".into()),
+                )
+                .title("Mochi Tasks")
+                .inner_size(340.0, 440.0)
+                .min_inner_size(260.0, 300.0)
+                .build()
+                {
+                    eprintln!("mochi: failed to open tasks window: {error}");
+                }
+            });
+        }
     }
 }
 
