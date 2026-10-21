@@ -1,0 +1,149 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #fff8ef;
+  color: #3d3129;
+  font: 13px/1.45 system-ui, sans-serif;
+}
+
+.panel {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.add-row {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 2px;
+}
+
+.add-row input {
+  padding: 5px 8px;
+  border: 1px solid #e0cbb2;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+}
+
+#task-title {
+  flex: 1;
+  min-width: 0;
+}
+
+#task-due {
+  width: 168px;
+}
+
+button.primary {
+  padding: 5px 11px;
+  border: 1px solid #e0913f;
+  border-radius: 8px;
+  background: #f0964a;
+  font: 600 13px system-ui, sans-serif;
+  color: #fff;
+  cursor: pointer;
+}
+
+button.primary:hover {
+  background: #e0853a;
+}
+
+.empty {
+  color: #8a7867;
+  font-size: 12px;
+  text-align: center;
+  padding: 14px 0 6px;
+}
+
+#task-list {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+#task-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid #f0decb;
+  border-radius: 8px;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+#task-list li .task-title {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+#task-list li.done {
+  opacity: 0.55;
+}
+
+#task-list li.done .task-title {
+  text-decoration: line-through;
+}
+
+.finish {
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  color: #2f9e44;
+  padding: 2px 4px;
+}
+
+.finish:hover {
+  background: #ecf7ef;
+}
+
+.task-due {
+  font-size: 11px;
+  color: #6d5c4c;
+  white-space: nowrap;
+}
+
+.task-due.overdue {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.del {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #8a7867;
+  font-size: 13px;
+  padding: 2px 5px;
+}
+
+.del:hover {
+  color: #c0392b;
+  background: #fdeeee;
+  border-radius: 6px;
+}
+
+.hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #8a7867;
+}

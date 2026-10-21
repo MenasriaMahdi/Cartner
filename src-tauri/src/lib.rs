@@ -21,18 +21,46 @@ fn toggle_settings_window(app: tauri::AppHandle) {
     }
 }
 
+/// The tasks window is created on demand and destroyed when closed,
+/// so it never holds memory while hidden.
+#[tauri::command]
+fn toggle_tasks_window(app: tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window("tasks") {
+        let _ = window.show();
+        let _ = window.set_focus();
+        return;
+    }
+    if let Err(error) = tauri::WebviewWindowBuilder::new(
+        &app,
+        "tasks",
+        tauri::WebviewUrl::App("tasks.html".into()),
+    )
+    .title("Mochi Tasks")
+    .inner_size(340.0, 440.0)
+    .min_inner_size(260.0, 300.0)
+    .build()
+    {
+        eprintln!("mochi: failed to open tasks window: {error}");
+    }
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
-        .invoke_handler(tauri::generate_handler![exit_app, toggle_settings_window])
+        .invoke_handler(tauri::generate_handler![
+            exit_app,
+            toggle_settings_window,
+            toggle_tasks_window
+        ])
         .setup(|app| {
             let show = MenuItem::with_id(app, "show", "Show cat", true, None::<&str>)?;
             let hide = MenuItem::with_id(app, "hide", "Hide cat", true, None::<&str>)?;
             let settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
+            let tasks_item = MenuItem::with_id(app, "tasks", "Tasks", true, None::<&str>)?;
             let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
             let sep1 = PredefinedMenuItem::separator(app)?;
             let sep2 = PredefinedMenuItem::separator(app)?;
-            let menu = Menu::with_items(app, &[&show, &hide, &sep1, &settings, &sep2, &exit])?;
+            let menu = Menu::with_items(app, &[&show, &hide, &sep1, &tasks_item, &settings, &sep2, &exit])?;
 
             let mut tray = TrayIconBuilder::with_id("mochi-tray")
                 .menu(&menu)
@@ -49,6 +77,7 @@ pub fn run() {
                             let _ = window.hide();
                         }
                     }
+                    "tasks" => toggle_tasks_window(app.clone()),
                     "settings" => toggle_settings_window(app.clone()),
                     "exit" => app.exit(0),
                     _ => {}

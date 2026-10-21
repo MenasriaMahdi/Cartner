@@ -16,5 +16,18 @@ export interface AppSettings {
   catPosition: CatPosition | null;
 }
 
+export interface Task {
+  id: string;
+  title: string;
+  /** Unix ms when the task is due; undefined = assigned without a time. */
+  dueAt?: number;
+  done: boolean;
+  createdAt: number;
+  /** Unix ms when the reminder already fired; prevents refiring. */
+  remindedAt?: number;
+}
+
+export const MAX_TASKS = 100;
+
 export const REMINDER_MINUTES_MIN = 5;
 export const REMINDER_MINUTES_MAX = 720;

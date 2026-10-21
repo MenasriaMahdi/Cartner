@@ -5,32 +5,39 @@ description: Architecture rules for Mochi's Tauri shell — windows, tray, comma
 
 ## Windows & tray (fixed)
 
-- Two webviews total: `main` (transparent, always-on-top, 176×176, skipTaskbar,
+- Two persistent webviews: `main` (transparent, always-on-top, 176×176, skipTaskbar,
   no decorations, shadow off) and `settings` (hidden until toggled, centered).
-- Closing either window = `hide()`, enforced in Rust
-  (`CloseRequested → prevent_close`). The app only exits via tray/context
+- A third window, `tasks`, is **created on demand** by the Rust command
+  `toggle_tasks_window` and **destroyed when closed** — it must never become a
+  persistent hidden webview. In dev it loads `tasks.html`; no static config
+  entry exists for it.
+- Closing either persistent window = `hide()`, enforced in Rust
+  (`CloseRequested → prevent_close`). The tasks window closing normally is
+  intentional destroy. The app only exits via tray/context
   "Exit" (`exit_app`) — never by closing windows.
-- Tray: show / hide / settings / exit, event IDs matched in `lib.rs`.
-  `Settings` from tray and context menu both go through the single Rust
-  command `toggle_settings_window`.
+- Tray: show / hide / tasks / settings / exit, event IDs matched in `lib.rs`.
+  `Settings`/`Tasks` from tray and context menu both route through the Rust
+  commands (`toggle_settings_window`, `toggle_tasks_window`).
 
 ## Cross-window flow (do not fork it)
 
-- Persistence owner = whichever window calls `saveSettings()`; it broadcasts
-  the **complete** settings object on `mochi:settings-changed`; all listeners
-  re-sanitize via `sanitizeSettings()` and never re-save.
+- Persistence owner = whichever window calls `saveSettings()`/`saveTasks()`;
+  it broadcasts the **complete** object on `mochi:settings-changed` /
+  `mochi:tasks-changed`; all listeners re-sanitize and never re-save.
 - Event names are namespaced `mochi:*`. Registry (keep updated):
   - `mochi:settings-changed` — full sanitized `AppSettings` payload.
+  - `mochi:tasks-changed` — full sanitized task list (max `MAX_TASKS` = 100).
 
 ## Settings schema rules
 
-- One storage key: `mochi.settings.v1`. Bump the `v1` suffix only for breaking
+- One storage key per collection: `mochi.settings.v1` (reminders + cat
+  position) and `mochi.tasks.v1` (todo tasks). Bump a `vN` suffix only for breaking
   shape changes, and keep the old key readable for one release (migrate, then
   delete).
 - Unknown/invalid stored fields must degrade silently to defaults
-  (`sanitizeSettings`/`sanitizeReminder`/`sanitizeInterval`) — never crash, never
-  reset unrelated fields. Any new field gets a default + a sanitize rule in
-  `state/settings.ts` and is included in `AppSettings` typing.
+  (`sanitizeSettings`/`sanitizeTask(Task)s`/`sanitizeInterval`) — never crash, never
+  reset unrelated fields. Any new field gets a default + sanitize rule in
+  `state/…ts` and is part of the type. Task lists are capped at `MAX_TASKS`.
 - Interval bounds live in `REMINDER_MINUTES_MIN/MAX` — sanitize before use.
 
 ## Capabilities & commands

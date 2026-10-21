@@ -6,6 +6,7 @@ import { startIdleCycle } from "./cat";
 import { initContextMenu, setMenuChecks } from "./contextMenu";
 import { initDragging } from "./drag";
 import { applyReminderSettings } from "./reminders";
+import { initializeTaskReminders } from "./taskReminders";
 import {
   loadSettings,
   sanitizeSettings,
@@ -40,15 +41,18 @@ function toggleReminder(kind: "drink" | "eat"): void {
   saveSettings(next); // the settings listener applies it everywhere
 }
 
+function openPanel(command: "toggle_settings_window" | "toggle_tasks_window"): void {
+  void invoke(command).catch((error) =>
+    console.warn(`mochi: ${command} failed`, error),
+  );
+}
+
 initContextMenu({
   onMenuOpen: refreshMenuChecks,
   onToggleDrink: () => toggleReminder("drink"),
   onToggleEat: () => toggleReminder("eat"),
-  onOpenSettings: () => {
-    void invoke("toggle_settings_window").catch((error) =>
-      console.warn("mochi: could not open settings", error),
-    );
-  },
+  onOpenSettings: () => openPanel("toggle_settings_window"),
+  onOpenTasks: () => openPanel("toggle_tasks_window"),
   onExit: () => {
     void invoke("exit_app").catch((error) =>
       console.warn("mochi: could not exit", error),
@@ -63,6 +67,7 @@ initDragging((position) => {
 });
 
 applyReminderSettings(settings);
+initializeTaskReminders();
 startIdleCycle();
 
 void listen(SETTINGS_CHANGED_EVENT, (event) => {

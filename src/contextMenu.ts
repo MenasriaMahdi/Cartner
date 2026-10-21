@@ -5,6 +5,7 @@ export interface MenuActions {
   onToggleDrink: () => void;
   onToggleEat: () => void;
   onOpenSettings: () => void;
+  onOpenTasks: () => void;
   onExit: () => void;
 }
 
@@ -56,6 +57,10 @@ export function initContextMenu(actions: MenuActions): void {
   requireElement("menu-eat").addEventListener("click", () => {
     hide();
     actions.onToggleEat();
+  });
+  requireElement("menu-tasks").addEventListener("click", () => {
+    hide();
+    actions.onOpenTasks();
   });
   requireElement("menu-settings").addEventListener("click", () => {
     hide();

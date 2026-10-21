@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mochi Tasks</title>
+    <link rel="stylesheet" href="/src/tasks.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <h1>🐱 Mochi tasks</h1>
+      <form id="task-form" class="add-row" autocomplete="off">
+        <input type="text" id="task-title" placeholder="e.g. Pay the electricity bill" maxlength="120" />
+        <input type="datetime-local" id="task-due" title="Optional time" />
+        <button type="submit" class="primary" title="Add task">➕</button>
+      </form>
+      <p id="task-empty" class="empty">No tasks yet. Mochi is napping 😴</p>
+      <ul id="task-list"></ul>
+      <p class="hint">Give a task a time and Mochi will remind you right on time 🐾</p>
+    </main>
+    <script type="module" src="/src/main-tasks.ts"></script>
+  </body>
+</html>

@@ -20,7 +20,7 @@ never grow past that floor, not literally zero bytes.
 | Rust crates          | only `tauri` (with `tray-icon`) + `tauri-plugin-notification`    |
 | Idle CPU             | ~0% when the user is not interacting (seconds-scale timers only) |
 | Largest asset        | cat art ≤ 10 kB (it is currently inline SVG ≈ 2 kB)              |
-| Windows              | exactly 2 webviews (cat + hidden settings), no more              |
+| Windows              | 2 persistent webviews (cat window + hidden settings) + 1 strictly on-demand Tasks window that is destroyed on close; never more persistent ones |
 
 ## Forbidden patterns
 
@@ -38,10 +38,14 @@ never grow past that floor, not literally zero bytes.
 
 ## Required patterns (already established — keep them)
 
-- Single persistence path: writers go through `saveSettings()` (writes
-  localStorage, broadcasts `mochi:settings-changed`). Listeners never re-save
+- Single persistence path: writers go through `saveSettings()` / `saveTasks()`
+  (write localStorage, broadcast the change). Listeners never re-save
   (no echo loops).
-- Event payloads are always re-sanitized with `sanitizeSettings()` before use.
+- Event payloads are always re-sanitized with `sanitizeSettings()` /
+  `sanitizeTasks()` before use.
+- One timer duty per domain: the two reminder timers plus a single timer for
+  the nearest pending task — each single-shot and rescheduled only when its
+  source data actually changes.
 - Window position saves debounced ≥ 400 ms after the last `tauri://moved`; no
   writes while the native drag is still active.
 - All timers whose lifetime is not "app ends" must be cleared with
@@ -52,8 +56,9 @@ never grow past that floor, not literally zero bytes.
 1. `npm run check` and `npm run build` — clean, note `dist` JS total in report.
 2. `cargo check` in `src-tauri` — clean, 0 warnings.
 3. Grep new code for: `setInterval`, `requestAnimationFrame`, `MutationObserver`,
-   polling loops, `new Notification` outside `reminders.ts`, direct
-   `localStorage` writes outside `state/settings.ts` (read-only is fine).
+   polling loops, `new Notification` outside `reminders.ts`/`taskReminders.ts`,
+   direct `localStorage` writes outside `state/settings.ts`/`state/tasks.ts`
+   (reads elsewhere are fine).
 4. Launch the debug exe, let it idle 60 s: confirm Task Manager shows ~0.0–0.1%
    CPU and RAM within ~5 MB of the previous run.
 5. If a new permission/command was added to `src-tauri/capabilities/default.json`
