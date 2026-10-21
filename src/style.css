@@ -124,43 +124,100 @@ body {
   70% { transform: scale(0.98, 1.02); }
 }
 
-/* --- 8-bit tuxedo skin (frames built once at boot by pixelCat.ts) --- */
-#pixel-cat {
+/* --- pixel-art skin: strips composed from the artist's PNG frames --- */
+#cat-art {
+  position: absolute;
+  left: 24px;
+  top: 36px;
+  width: 128px;
+  height: 128px;
+  pointer-events: none;
   display: none;
-  shape-rendering: crispEdges;
 }
 
-body.pixel #classic-cat {
+body.pixel #cat-art {
+  display: block;
+}
+
+/* hide the drawn SVG cat body but keep the shadow and drag hot-spot */
+body.pixel #cat-layer {
   display: none;
 }
 
-body.pixel #pixel-cat {
-  display: inline;
+.strip {
+  position: absolute;
+  inset: 0;
+  width: 128px;
+  height: 128px;
+  overflow: hidden;
+  display: none;
 }
 
-/* The closed frame doubles as blink, poke squint and walking patter. */
-#pixel-frame-closed {
+.strip img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  image-rendering: pixelated;
+}
+
+#cat-art {
+  animation: breathe 3.8s ease-in-out infinite;
+}
+
+#cat-art.walking {
+  animation: pace 3s ease-in-out infinite;
+}
+
+#cat-art.reminder {
+  animation: wiggle 1.2s ease-in-out 1;
+}
+
+#cat-art.poke {
+  animation: squash 0.35s ease-in-out 1;
+}
+
+/* idle sway (4 frames) + blink overlay (closed-eyes frame) */
+#cat-art:not(.walking):not(.reminder):not(.poke) #strip-idle {
+  display: block;
+}
+
+#cat-art:not(.walking):not(.reminder):not(.poke) #art-idle {
+  animation: art-cycle 2.4s steps(4) infinite;
+}
+
+#cat-art:not(.walking):not(.reminder):not(.poke) #strip-blink {
+  display: block;
+}
+
+#cat-art:not(.walking):not(.reminder):not(.poke) #art-blink {
   opacity: 0;
-  animation: pixel-blink 4.6s steps(1) infinite;
+  animation: art-blink 5.6s steps(1) infinite;
 }
 
-@keyframes pixel-blink {
+#cat-art.walking #strip-walk {
+  display: block;
+}
+
+#cat-art.walking #art-walk {
+  animation: art-cycle 0.72s steps(6) infinite;
+}
+
+#cat-art.reminder #strip-alert {
+  display: block;
+}
+
+#cat-art.poke #strip-happy {
+  display: block;
+}
+
+@keyframes art-cycle {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@keyframes art-blink {
   0%, 90%, 97%, 100% { opacity: 0; }
   91%, 96% { opacity: 1; }
-}
-
-#cat-layer.walking #pixel-frame-closed {
-  animation: pixel-step 0.32s steps(1) infinite;
-}
-
-@keyframes pixel-step {
-  0%, 49% { opacity: 0; }
-  50%, 100% { opacity: 1; }
-}
-
-#cat-layer.poke #pixel-frame-closed {
-  animation: none;
-  opacity: 1;
 }
 
 /* --- speech bubble --- */
@@ -248,7 +305,7 @@ body.pixel #pixel-cat {
   #cat-tail,
   #cat-eyes,
   #cat-layer,
-  #pixel-frame-closed,
+  #cat-art img,
   .foot-l,
   .foot-r {
     animation: none !important;

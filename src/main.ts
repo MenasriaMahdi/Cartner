@@ -5,7 +5,6 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { startIdleCycle } from "./cat";
 import { initContextMenu, setMenuChecks } from "./contextMenu";
 import { initDragging } from "./drag";
-import { installPixelCat } from "./pixelCat";
 import { applyReminderSettings } from "./reminders";
 import { initializeTaskReminders } from "./taskReminders";
 import {
@@ -74,7 +73,6 @@ initDragging((position) => {
 applyReminderSettings(settings);
 initializeTaskReminders();
 startIdleCycle();
-installPixelCat();
 applySkin(settings);
 
 void listen(SETTINGS_CHANGED_EVENT, (event) => {
