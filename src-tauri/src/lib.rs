@@ -118,6 +118,17 @@ fn position_tasks_near_cat(app: &tauri::AppHandle, tasks: &tauri::WebviewWindow)
 
 pub fn run() {
     tauri::Builder::default()
+        // Single instance guard MUST be the first plugin: a second launch
+        // hands control to the first process (focusing the cat), then the
+        // extra process exits by itself. Dormant after startup.
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            println!("mochi: second launch detected, focusing the cat");
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             exit_app,
