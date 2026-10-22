@@ -21,8 +21,8 @@ body {
 
 #cat {
   position: absolute;
-  left: 37px;
-  top: 69px;
+  left: 17px;
+  top: 23px;
   cursor: grab;
 }
 
@@ -129,8 +129,8 @@ body {
 /* --- pixel-art skin: strips composed from the artist's PNG frames --- */
 #cat-art {
   position: absolute;
-  left: 33px;
-  top: 54px;
+  left: 13px;
+  top: 8px;
   width: 110px;
   height: 110px;
   pointer-events: none;
@@ -270,15 +270,15 @@ body.pixel #cat-layer {
 /* --- speech bubble --- */
 #bubble {
   position: absolute;
-  top: 2px;
+  top: 4px;
   left: 50%;
   transform: translate(-50%, 8px);
-  max-width: 164px;
-  padding: 7px 10px;
+  max-width: 122px;
+  padding: 6px 8px;
   background: rgba(255, 253, 247, 0.97);
   border: 1.5px solid #e8c39e;
   border-radius: 10px;
-  font: 600 12px/1.35 system-ui, sans-serif;
+  font: 600 11.5px/1.3 system-ui, sans-serif;
   color: var(--ink);
   text-align: center;
   box-shadow: 0 3px 10px rgba(120, 80, 30, 0.18);
@@ -288,73 +288,24 @@ body.pixel #cat-layer {
   z-index: 5;
 }
 
+/* little tail, so the bubble reads as coming from the cat below it */
+#bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 253, 247, 0.97);
+  border-right: 1.5px solid #e8c39e;
+  border-bottom: 1.5px solid #e8c39e;
+  border-bottom-right-radius: 2px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
 #bubble.show {
   opacity: 1;
   transform: translate(-50%, 0);
-}
-
-/* --- context menu --- */
-#menu {
-  position: fixed;
-  min-width: 138px;
-  padding: 5px;
-  background: rgba(255, 253, 247, 0.98);
-  border: 1.5px solid #e8c39e;
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(120, 80, 30, 0.22);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-#menu[hidden] {
-  display: none;
-}
-
-.menu-page {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.menu-page[hidden] {
-  display: none;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 4px 9px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  font: 500 12.5px/1.2 system-ui, sans-serif;
-  color: var(--ink);
-  text-align: left;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.menu-item:hover {
-  background: #ffeedd;
-}
-
-.menu-item.danger:hover {
-  background: #ffe3e3;
-}
-
-.menu-item .check {
-  color: #2f9e44;
-  font-weight: 700;
-}
-
-.menu-sep {
-  height: 1px;
-  background: #f0decb;
-  margin: 2px 6px;
 }
 
 @media (prefers-reduced-motion: reduce) {

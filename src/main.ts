@@ -1,9 +1,8 @@
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { PhysicalPosition } from "@tauri-apps/api/dpi";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { noteActivity, setCatMood, startIdleCycle } from "./cat";
-import { initContextMenu, setMenuChecks } from "./contextMenu";
+import { initContextMenu } from "./contextMenu";
 import { initDragging } from "./drag";
 import { applyReminderSettings } from "./reminders";
 import { initializeTaskReminders } from "./taskReminders";
@@ -13,7 +12,7 @@ import {
   saveSettings,
   SETTINGS_CHANGED_EVENT,
 } from "./state/settings";
-import type { AppSettings } from "./types";
+import type { AppSettings, CatMood } from "./types";
 
 const wnd = getCurrentWindow();
 let settings: AppSettings = loadSettings();
@@ -31,10 +30,6 @@ function applySkin(s: AppSettings): void {
   setCatMood(s.catMood);
 }
 
-function refreshMenuChecks(): void {
-  setMenuChecks(settings.drinkReminder.enabled, settings.eatReminder.enabled, settings.catMood);
-}
-
 function toggleReminder(kind: "drink" | "eat"): void {
   const next: AppSettings = {
     ...settings,
@@ -46,28 +41,21 @@ function toggleReminder(kind: "drink" | "eat"): void {
   saveSettings(next); // the settings listener applies it everywhere
 }
 
-function openPanel(command: "toggle_settings_window" | "toggle_tasks_window"): void {
-  void invoke(command).catch((error) =>
-    console.warn(`mochi: ${command} failed`, error),
-  );
-}
-
-initContextMenu({
-  onMenuOpen: () => {
+initContextMenu(
+  () => {
     noteActivity();
-    refreshMenuChecks();
+    return {
+      drink: settings.drinkReminder.enabled,
+      eat: settings.eatReminder.enabled,
+      mood: settings.catMood,
+    };
   },
-  onToggleDrink: () => toggleReminder("drink"),
-  onToggleEat: () => toggleReminder("eat"),
-  onSetMood: (mood) => saveSettings({ ...settings, catMood: mood }),
-  onOpenSettings: () => openPanel("toggle_settings_window"),
-  onOpenTasks: () => openPanel("toggle_tasks_window"),
-  onExit: () => {
-    void invoke("exit_app").catch((error) =>
-      console.warn("mochi: could not exit", error),
-    );
+  (action) => {
+    noteActivity();
+    if (action === "drink" || action === "eat") toggleReminder(action);
+    else saveSettings({ ...settings, catMood: action.slice(5) as CatMood });
   },
-});
+);
 
 initDragging((position) => {
   noteActivity();
@@ -83,7 +71,6 @@ applySkin(settings);
 
 void listen(SETTINGS_CHANGED_EVENT, (event) => {
   settings = sanitizeSettings(event.payload);
-  refreshMenuChecks();
   applyReminderSettings(settings);
   applySkin(settings);
 }).catch((error) => console.warn("mochi: could not listen for settings", error));

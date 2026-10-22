@@ -1,8 +1,112 @@
 use tauri::{
-    menu::{Menu, MenuItem, PredefinedMenuItem},
+    menu::{
+        CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu,
+    },
     tray::TrayIconBuilder,
-    Manager, WindowEvent,
+    Emitter, Manager, WindowEvent,
 };
+
+/// Mood ids offered by the right-click menu, in display order.
+const MOOD_ITEMS: [(&str, &str); 5] = [
+    ("mood-normal", "😌 Normal"),
+    ("mood-happy", "💗 Happy"),
+    ("mood-sleepy", "😴 Sleepy"),
+    ("mood-grumpy", "😾 Grumpy"),
+    ("mood-sad", "😢 Sad"),
+];
+
+/// Opens the context menu as a *native* popup at the cursor, built fresh on
+/// every click so the check marks match the current settings. A native menu
+/// is not clipped to the tiny cat window, so it never covers the cat.
+///
+/// `async` on purpose: `popup_menu` blocks while the menu is open and hops to
+/// the main thread, which must not be the thread running the command.
+#[tauri::command]
+async fn show_cat_menu(
+    window: tauri::WebviewWindow,
+    drink: bool,
+    eat: bool,
+    mood: String,
+) -> Result<(), String> {
+    let app = window.app_handle();
+
+    let drink_item = CheckMenuItem::with_id(app, "drink", "💧 Drink reminder", true, drink, None::<&str>)
+        .map_err(|error| error.to_string())?;
+    let eat_item = CheckMenuItem::with_id(app, "eat", "🍖 Eat reminder", true, eat, None::<&str>)
+        .map_err(|error| error.to_string())?;
+
+    let mut mood_items = Vec::with_capacity(MOOD_ITEMS.len());
+    for (id, label) in MOOD_ITEMS {
+        let checked = mood == id.trim_start_matches("mood-");
+        mood_items.push(
+            CheckMenuItem::with_id(app, id, label, true, checked, None::<&str>)
+                .map_err(|error| error.to_string())?,
+        );
+    }
+    let mood_refs: Vec<&dyn IsMenuItem<tauri::Wry>> = mood_items
+        .iter()
+        .map(|item| item as &dyn IsMenuItem<tauri::Wry>)
+        .collect();
+    let mood_menu = Submenu::with_items(app, "😺 Mood", true, &mood_refs)
+        .map_err(|error| error.to_string())?;
+
+    let tasks_item = MenuItem::with_id(app, "tasks", "📝 Tasks", true, None::<&str>)
+        .map_err(|error| error.to_string())?;
+    let settings_item = MenuItem::with_id(app, "settings", "⚙️ Settings", true, None::<&str>)
+        .map_err(|error| error.to_string())?;
+    let exit_item = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)
+        .map_err(|error| error.to_string())?;
+    let sep1 = PredefinedMenuItem::separator(app).map_err(|error| error.to_string())?;
+    let sep2 = PredefinedMenuItem::separator(app).map_err(|error| error.to_string())?;
+
+    let items: Vec<&dyn IsMenuItem<tauri::Wry>> = vec![
+        &drink_item,
+        &eat_item,
+        &sep1,
+        &mood_menu,
+        &tasks_item,
+        &settings_item,
+        &sep2,
+        &exit_item,
+    ];
+    let menu = Menu::with_items(app, &items).map_err(|error| error.to_string())?;
+    window.popup_menu(&menu).map_err(|error| error.to_string())
+}
+
+/// One handler for every menu (tray + context popup): the tray listener is
+/// app-wide, so popup clicks land here too. Settings-related picks are handed
+/// back to the webview, which owns the persisted state.
+fn handle_menu_event(app: &tauri::AppHandle, id: &str) {
+    match id {
+        "show" => {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }
+        "hide" => {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.hide();
+            }
+        }
+        "tasks" => toggle_tasks_window(app.clone()),
+        "settings" => toggle_settings_window(app.clone()),
+        "exit" => app.exit(0),
+        "drink" | "eat" => {
+            println!("mochi: menu pick: {id}");
+            if let Err(error) = app.emit("cartner:menu", id) {
+                eprintln!("mochi: menu emit failed: {error}");
+            }
+        }
+        mood if mood.starts_with("mood-") => {
+            println!("mochi: menu pick: {mood}");
+            if let Err(error) = app.emit("cartner:menu", mood) {
+                eprintln!("mochi: menu emit failed: {error}");
+            }
+        }
+        _ => {}
+    }
+}
 
 #[tauri::command]
 fn exit_app(app: tauri::AppHandle) {
@@ -91,7 +195,7 @@ fn position_tasks_near_cat(app: &tauri::AppHandle, tasks: &tauri::WebviewWindow)
     let Ok(cat_pos) = cat.outer_position() else {
         return;
     };
-    let cat_size = cat.outer_size().unwrap_or_else(|_| tauri::PhysicalSize::new(176, 176));
+    let cat_size = cat.outer_size().unwrap_or_else(|_| tauri::PhysicalSize::new(136, 126));
     let size = tasks
         .outer_size()
         .unwrap_or_else(|_| tauri::PhysicalSize::new(320, 430));
@@ -134,7 +238,8 @@ pub fn run() {
             exit_app,
             log_line,
             toggle_settings_window,
-            toggle_tasks_window
+            toggle_tasks_window,
+            show_cat_menu
         ])
         .setup(|app| {
             let show = MenuItem::with_id(app, "show", "Show cat", true, None::<&str>)?;
@@ -149,23 +254,7 @@ pub fn run() {
             let mut tray = TrayIconBuilder::with_id("mochi-tray")
                 .menu(&menu)
                 .show_menu_on_left_click(true)
-                .on_menu_event(|app, event| match event.id().as_ref() {
-                    "show" => {
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.set_focus();
-                        }
-                    }
-                    "hide" => {
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.hide();
-                        }
-                    }
-                    "tasks" => toggle_tasks_window(app.clone()),
-                    "settings" => toggle_settings_window(app.clone()),
-                    "exit" => app.exit(0),
-                    _ => {}
-                });
+                .on_menu_event(|app, event| handle_menu_event(app, event.id().as_ref()));
             if let Some(icon) = app.default_window_icon().cloned() {
                 tray = tray.icon(icon);
             }

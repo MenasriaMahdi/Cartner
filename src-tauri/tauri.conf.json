@@ -17,8 +17,8 @@
       {
         "label": "main",
         "title": "Cartner",
-        "width": 176,
-        "height": 176,
+        "width": 136,
+        "height": 126,
         "transparent": true,
         "decorations": false,
         "alwaysOnTop": true,
