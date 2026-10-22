@@ -16,3 +16,10 @@ tauri = { version = "2", features = ["tray-icon"] }
 serde = { version = "1", features = ["derive"] }
 tauri-plugin-notification = "2"
 tauri-plugin-single-instance = "2.5.4"
+
+# Ship a smaller, fully optimised binary (build takes a little longer).
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true

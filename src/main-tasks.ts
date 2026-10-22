@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import "./report";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { requireElement } from "./dom";
@@ -219,7 +219,6 @@ function render(): void {
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const title = titleInput.value.trim();
-  void invoke("log_line", { message: `tasks: add requested (${title.length} chars)` });
   if (title === "" || tasks.length >= MAX_TASKS) return;
   const rawDue = dueInput.value;
   const dueTime = rawDue === "" ? NaN : new Date(rawDue).getTime();
@@ -231,7 +230,6 @@ form.addEventListener("submit", (event) => {
     createdAt: Date.now(),
   };
   tasks = saveTasks([...tasks, task]);
-  void invoke("log_line", { message: `tasks: saved, total ${tasks.length}` });
   titleInput.value = "";
   dueInput.value = "";
   titleInput.focus();
@@ -265,6 +263,5 @@ function syncWidgetChrome(): void {
   });
 }
 
-void invoke("log_line", { message: "tasks page booted" });
 syncWidgetChrome();
 render();

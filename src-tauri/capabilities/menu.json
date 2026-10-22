@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "menu",
+  "description": "Context-menu popup: only event listeners plus the app's own Rust commands; it never touches window APIs directly.",
+  "windows": ["menu"],
+  "permissions": ["core:default"]
+}

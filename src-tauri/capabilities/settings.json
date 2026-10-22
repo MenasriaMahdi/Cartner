@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "settings",
+  "description": "Settings panel: may close itself; everything else goes through Rust commands.",
+  "windows": ["settings"],
+  "permissions": ["core:default", "core:window:allow-close"]
+}

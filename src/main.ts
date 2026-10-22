@@ -1,6 +1,10 @@
+import "./report";
 import { listen } from "@tauri-apps/api/event";
 import { PhysicalPosition } from "@tauri-apps/api/dpi";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import {
+  availableMonitors,
+  getCurrentWindow,
+} from "@tauri-apps/api/window";
 import { noteActivity, setCatMood, startIdleCycle } from "./cat";
 import { initContextMenu } from "./contextMenu";
 import { initDragging } from "./drag";
@@ -12,17 +16,38 @@ import {
   saveSettings,
   SETTINGS_CHANGED_EVENT,
 } from "./state/settings";
-import type { AppSettings, CatMood } from "./types";
+import type { AppSettings, CatMood, CatPosition } from "./types";
 
 const wnd = getCurrentWindow();
 let settings: AppSettings = loadSettings();
 
-// Restore the last known cat position (missing on the very first run).
+/**
+ * Restores the last position only if that spot still exists: a monitor may
+ * have been unplugged or rearranged since the cat was parked there. Without
+ * this the window could start life off-screen and look like a crash.
+ */
+async function restorePosition(saved: CatPosition): Promise<void> {
+  try {
+    const monitors = await availableMonitors();
+    const onScreen = monitors.some(
+      (monitor) =>
+        saved.x >= monitor.position.x - 24 &&
+        saved.y >= monitor.position.y - 24 &&
+        saved.x <= monitor.position.x + monitor.size.width - 40 &&
+        saved.y <= monitor.position.y + monitor.size.height - 40,
+    );
+    if (!onScreen) return;
+    await wnd.setPosition(
+      new PhysicalPosition(Math.round(saved.x), Math.round(saved.y)),
+    );
+  } catch (error) {
+    console.warn("mochi: could not restore cat position", error);
+  }
+}
+
 const savedPosition = settings.catPosition;
 if (savedPosition !== null) {
-  void wnd
-    .setPosition(new PhysicalPosition(Math.round(savedPosition.x), Math.round(savedPosition.y)))
-    .catch((error) => console.warn("mochi: could not restore cat position", error));
+  void restorePosition(savedPosition);
 }
 
 function applySkin(s: AppSettings): void {

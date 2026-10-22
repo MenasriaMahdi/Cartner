@@ -25,6 +25,14 @@ struct MenuState {
 /// webview reads it once on load; nothing polls.
 static MENU_STATE: Mutex<Option<MenuState>> = Mutex::new(None);
 
+/// Hardening for webviews we build ourselves: only bundled app pages may ever
+/// become the document, so a stray link or dropped file cannot navigate away
+/// from the local app origin.
+fn is_local_url(url: &tauri::Url) -> bool {
+    url.scheme() == "tauri"
+        || matches!(url.host_str(), Some("tauri.localhost") | Some("localhost"))
+}
+
 /// Opens the designed menu popup at the cursor. The window is pre-built once
 /// (hidden) at startup and only positioned + shown afterwards, so a right
 /// click is instant instead of paying for webview creation each time.
@@ -82,6 +90,7 @@ fn create_menu_window(app: &tauri::AppHandle) -> tauri::Result<tauri::WebviewWin
         .resizable(false)
         .focused(false)
         .visible(false)
+        .on_navigation(is_local_url)
         .build()?;
 
     // Dismiss like a real context menu: focus elsewhere hides it. A hidden
@@ -200,11 +209,6 @@ fn handle_menu_event(app: &tauri::AppHandle, id: &str) {
     }
 }
 
-#[tauri::command]
-fn exit_app(app: tauri::AppHandle) {
-    app.exit(0);
-}
-
 /// Debug bridge: lets the webviews report JS errors / breadcrumbs to the
 /// Rust console, so failures are visible in captured logs instead of just
 /// the invisible web devtools.
@@ -215,17 +219,13 @@ fn log_line(message: String) {
 
 #[tauri::command]
 fn toggle_settings_window(app: tauri::AppHandle) {
-    println!("mochi: settings toggle reached");
     if let Some(window) = app.get_webview_window("settings") {
         if window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         } else {
-            println!("mochi: showing settings window");
             let _ = window.show();
             let _ = window.set_focus();
         }
-    } else {
-        println!("mochi: settings window not found");
     }
 }
 
@@ -235,7 +235,6 @@ fn toggle_settings_window(app: tauri::AppHandle) {
 /// memory while hidden.
 #[tauri::command]
 fn toggle_tasks_window(app: tauri::AppHandle) {
-    println!("mochi: tasks toggle reached");
     match app.get_webview_window("tasks") {
         Some(window) => {
             if window.is_visible().unwrap_or(false) {
@@ -262,6 +261,7 @@ fn toggle_tasks_window(app: tauri::AppHandle) {
                 .skip_taskbar(true)
                 .shadow(false)
                 .resizable(false)
+                .on_navigation(is_local_url)
                 .build();
                 match window {
                     Ok(window) => {
@@ -318,7 +318,6 @@ pub fn run() {
         // hands control to the first process (focusing the cat), then the
         // extra process exits by itself. Dormant after startup.
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
-            println!("mochi: second launch detected, focusing the cat");
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.unminimize();
                 let _ = window.show();
@@ -327,7 +326,6 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
-            exit_app,
             log_line,
             toggle_settings_window,
             toggle_tasks_window,
@@ -370,9 +368,11 @@ pub fn run() {
             }
 
             // Build the context-menu popup once, hidden, so the first right
-            // click does not pay for webview startup.
+            // click does not pay for webview startup. Delayed slightly so it
+            // never competes with the cat's first paint.
             let warm = app.handle().clone();
             std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_millis(800));
                 if let Err(error) = create_menu_window(&warm) {
                     eprintln!("mochi: could not pre-build the menu window: {error}");
                 }

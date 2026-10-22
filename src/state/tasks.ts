@@ -4,6 +4,9 @@ import { type Task, MAX_TASKS } from "../types";
 const STORAGE_KEY = "mochi.tasks.v1";
 export const TASKS_CHANGED_EVENT = "mochi:tasks-changed";
 
+/** Matches the maxlength of the task form, so storage can never hold more. */
+const MAX_TITLE_LENGTH = 120;
+
 export function randomId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -21,7 +24,8 @@ function finitePosNumber(v: unknown): number | undefined {
 
 function sanitizeTask(raw: unknown): Task | null {
   const o = asRecord(raw);
-  const title = typeof o["title"] === "string" ? o["title"].trim() : "";
+  const title =
+    typeof o["title"] === "string" ? o["title"].trim().slice(0, MAX_TITLE_LENGTH) : "";
   if (title === "") return null;
   return {
     id: typeof o["id"] === "string" && o["id"] !== "" ? o["id"] : randomId(),
