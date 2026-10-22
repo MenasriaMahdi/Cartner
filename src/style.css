@@ -21,8 +21,8 @@ body {
 
 #cat {
   position: absolute;
-  left: 28px;
-  top: 52px;
+  left: 37px;
+  top: 69px;
   cursor: grab;
 }
 
@@ -68,15 +68,15 @@ body {
 
 /* --- walking state --- */
 #cat-layer.walking {
-  animation: pace 3s ease-in-out infinite;
+  animation: pace 3.6s ease-in-out infinite;
 }
 
 #cat-layer.walking .foot-l {
-  animation: foot-step-a 0.7s ease-in-out infinite alternate;
+  animation: foot-step-a 0.9s ease-in-out infinite alternate;
 }
 
 #cat-layer.walking .foot-r {
-  animation: foot-step-b 0.7s ease-in-out infinite alternate;
+  animation: foot-step-b 0.9s ease-in-out infinite alternate;
 }
 
 #cat-layer.walking #cat-tail {
@@ -105,11 +105,11 @@ body {
 #cat-layer.reminder,
 #cat-layer.eat,
 #cat-layer.drink {
-  animation: wiggle 1.2s ease-in-out 1;
+  animation: wiggle 1.4s ease-in-out 1;
 }
 
 #cat-layer.poke {
-  animation: squash 0.35s ease-in-out 1;
+  animation: squash 0.45s ease-in-out 1;
 }
 
 @keyframes wiggle {
@@ -129,10 +129,10 @@ body {
 /* --- pixel-art skin: strips composed from the artist's PNG frames --- */
 #cat-art {
   position: absolute;
-  left: 24px;
-  top: 36px;
-  width: 128px;
-  height: 128px;
+  left: 33px;
+  top: 54px;
+  width: 110px;
+  height: 110px;
   pointer-events: none;
   display: none;
 }
@@ -149,8 +149,8 @@ body.pixel #cat-layer {
 .strip {
   position: absolute;
   inset: 0;
-  width: 128px;
-  height: 128px;
+  width: 110px;
+  height: 110px;
   overflow: hidden;
   display: none;
 }
@@ -159,6 +159,8 @@ body.pixel #cat-layer {
   position: absolute;
   left: 0;
   top: 0;
+  height: 110px;
+  width: auto;
   image-rendering: pixelated;
 }
 
@@ -171,11 +173,11 @@ body.pixel #cat-layer {
 }
 
 #cat-art.reminder {
-  animation: wiggle 1.2s ease-in-out 1;
+  animation: wiggle 1.4s ease-in-out 1;
 }
 
 #cat-art.poke {
-  animation: squash 0.35s ease-in-out 1;
+  animation: squash 0.45s ease-in-out 1;
 }
 
 /* transient states always override the current mood */
@@ -184,7 +186,7 @@ body.pixel #cat-layer {
 }
 
 #cat-art.walking #art-walk {
-  animation: art-cycle 0.72s steps(7) infinite;
+  animation: art-cycle 1.05s steps(7) infinite;
 }
 
 #cat-art.reminder #strip-alert {
@@ -202,7 +204,7 @@ body.pixel #cat-layer {
 }
 
 #cat-art.eat #art-eat {
-  animation: art-cycle 0.8s steps(4) infinite;
+  animation: art-cycle 1.2s steps(4) infinite;
 }
 
 #cat-art.drink #strip-drink {
@@ -210,27 +212,32 @@ body.pixel #cat-layer {
 }
 
 #cat-art.drink #art-drink {
-  animation: art-cycle 0.9s steps(2) infinite;
+  animation: art-cycle 1.4s steps(2) infinite;
 }
 
-/* moods: shown only while no transient state is playing */
-#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="normal"] #strip-idle {
+/* moods: shown only while no transient state is playing and not asleep */
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink, .sleeping)[data-mood="normal"] #strip-idle {
   display: block;
 }
 
-#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="happy"] #strip-happy {
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink, .sleeping)[data-mood="happy"] #strip-happy {
   display: block;
 }
 
-#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="sleepy"] #strip-sleepy {
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink, .sleeping)[data-mood="sleepy"] #strip-sleepy {
   display: block;
 }
 
-#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="grumpy"] #strip-grumpy {
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink, .sleeping)[data-mood="grumpy"] #strip-grumpy {
   display: block;
 }
 
-#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="sad"] #strip-sad {
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink, .sleeping)[data-mood="sad"] #strip-sad {
+  display: block;
+}
+
+/* auto-nap after a stretch of no interaction */
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink).sleeping #strip-sleepy {
   display: block;
 }
 
@@ -240,15 +247,15 @@ body.pixel #cat-layer {
 }
 
 #art-happy {
-  animation: art-cycle 1.8s steps(4) infinite;
+  animation: art-cycle 2.2s steps(4) infinite;
 }
 
 #art-sleepy {
-  animation: art-cycle 3.6s steps(4) infinite;
+  animation: art-cycle 4.2s steps(4) infinite;
 }
 
 #art-sad {
-  animation: art-cycle 2.1s steps(3) infinite;
+  animation: art-cycle 2.4s steps(3) infinite;
 }
 
 @keyframes art-cycle {

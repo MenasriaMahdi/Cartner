@@ -9,6 +9,11 @@ const bubble = requireElement("bubble");
 let bubbleTimer: ReturnType<typeof setTimeout> | undefined;
 let reminderTimer: ReturnType<typeof setTimeout> | undefined;
 let pokeTimer: ReturnType<typeof setTimeout> | undefined;
+let sleepTimer: ReturnType<typeof setTimeout> | undefined;
+let sleeping = false;
+
+/** Quiet time (no clicks, drags or menus) before she curls up by herself. */
+const SLEEP_AFTER_MS = 5 * 60_000;
 
 /** Mutually exclusive state classes (idle = no class at all). */
 const STATE_CLASSES = ["walking", "reminder", "eat", "drink"];
@@ -28,7 +33,24 @@ export function setCatMood(mood: CatMood): void {
   catArt.dataset.mood = mood;
 }
 
+/**
+ * Any interaction (poke, drag, right click) wakes her back to the chosen
+ * mood and restarts the nap countdown. One-shotted timeout, no polling.
+ */
+export function noteActivity(): void {
+  if (sleeping) {
+    sleeping = false;
+    if (catArt !== null) catArt.classList.remove("sleeping");
+  }
+  clearTimeout(sleepTimer);
+  sleepTimer = setTimeout(() => {
+    sleeping = true;
+    if (catArt !== null) catArt.classList.add("sleeping");
+  }, SLEEP_AFTER_MS);
+}
+
 export function pokeCat(): void {
+  noteActivity();
   for (const el of [catLayer, catArt]) {
     if (el === null) continue;
     // petting interrupts a stroll or a reminder reaction
@@ -47,7 +69,7 @@ export function pokeCat(): void {
       if (el === null) continue;
       el.classList.remove("poke");
     }
-  }, 500);
+  }, 1400);
 }
 
 export function showBubble(text: string): void {
@@ -63,17 +85,21 @@ export type ReminderAnim = "alert" | "drink" | "eat";
 export function pulseReminder(kind: ReminderAnim = "alert"): void {
   setCatState(kind === "alert" ? "reminder" : kind);
   clearTimeout(reminderTimer);
-  // eating/drinking gets a longer window so the loop reads
-  reminderTimer = setTimeout(() => setCatState("idle"), kind === "alert" ? 1300 : 2800);
+  // eating/drinking gets a longer window so the slower loop reads
+  reminderTimer = setTimeout(() => setCatState("idle"), kind === "alert" ? 1300 : 3800);
 }
 
 // Idle wandering: occasionally take a short stroll in place.
 function startStroll(): void {
+  if (sleeping) {
+    scheduleIdleCycle();
+    return;
+  }
   setCatState("walking");
   setTimeout(() => {
     setCatState("idle");
     scheduleIdleCycle();
-  }, 2400 + Math.random() * 2000);
+  }, 2600 + Math.random() * 2200);
 }
 
 function scheduleIdleCycle(): void {
@@ -87,5 +113,6 @@ function scheduleIdleCycle(): void {
 }
 
 export function startIdleCycle(): void {
+  noteActivity();
   scheduleIdleCycle();
 }
