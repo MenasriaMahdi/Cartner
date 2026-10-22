@@ -1,81 +1,158 @@
+use std::sync::Mutex;
 use tauri::{
-    menu::{
-        CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu,
-    },
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::TrayIconBuilder,
-    Emitter, Manager, WindowEvent,
+    Emitter, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder,
+    WindowEvent,
 };
 
-/// Mood ids offered by the right-click menu, in display order.
-const MOOD_ITEMS: [(&str, &str); 5] = [
-    ("mood-normal", "😌 Normal"),
-    ("mood-happy", "💗 Happy"),
-    ("mood-sleepy", "😴 Sleepy"),
-    ("mood-grumpy", "😾 Grumpy"),
-    ("mood-sad", "😢 Sad"),
-];
+/// Designed context-menu popup: a tiny transparent window that draws its own
+/// card, so it can be styled like the rest of the app while still being free
+/// of the cat window's bounds (and never covering the cat).
+const MENU_WIDTH: f64 = 208.0;
+const MENU_HEIGHT: f64 = 252.0;
+/// Transparent gutter inside the popup window that the card shadow lives in.
+const MENU_MARGIN: f64 = 6.0;
 
-/// Opens the context menu as a *native* popup at the cursor, built fresh on
-/// every click so the check marks match the current settings. A native menu
-/// is not clipped to the tiny cat window, so it never covers the cat.
-///
-/// `async` on purpose: `popup_menu` blocks while the menu is open and hops to
-/// the main thread, which must not be the thread running the command.
-#[tauri::command]
-async fn show_cat_menu(
-    window: tauri::WebviewWindow,
+#[derive(Clone, serde::Serialize)]
+struct MenuState {
     drink: bool,
     eat: bool,
     mood: String,
-) -> Result<(), String> {
-    let app = window.app_handle();
-
-    let drink_item = CheckMenuItem::with_id(app, "drink", "💧 Drink reminder", true, drink, None::<&str>)
-        .map_err(|error| error.to_string())?;
-    let eat_item = CheckMenuItem::with_id(app, "eat", "🍖 Eat reminder", true, eat, None::<&str>)
-        .map_err(|error| error.to_string())?;
-
-    let mut mood_items = Vec::with_capacity(MOOD_ITEMS.len());
-    for (id, label) in MOOD_ITEMS {
-        let checked = mood == id.trim_start_matches("mood-");
-        mood_items.push(
-            CheckMenuItem::with_id(app, id, label, true, checked, None::<&str>)
-                .map_err(|error| error.to_string())?,
-        );
-    }
-    let mood_refs: Vec<&dyn IsMenuItem<tauri::Wry>> = mood_items
-        .iter()
-        .map(|item| item as &dyn IsMenuItem<tauri::Wry>)
-        .collect();
-    let mood_menu = Submenu::with_items(app, "😺 Mood", true, &mood_refs)
-        .map_err(|error| error.to_string())?;
-
-    let tasks_item = MenuItem::with_id(app, "tasks", "📝 Tasks", true, None::<&str>)
-        .map_err(|error| error.to_string())?;
-    let settings_item = MenuItem::with_id(app, "settings", "⚙️ Settings", true, None::<&str>)
-        .map_err(|error| error.to_string())?;
-    let exit_item = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)
-        .map_err(|error| error.to_string())?;
-    let sep1 = PredefinedMenuItem::separator(app).map_err(|error| error.to_string())?;
-    let sep2 = PredefinedMenuItem::separator(app).map_err(|error| error.to_string())?;
-
-    let items: Vec<&dyn IsMenuItem<tauri::Wry>> = vec![
-        &drink_item,
-        &eat_item,
-        &sep1,
-        &mood_menu,
-        &tasks_item,
-        &settings_item,
-        &sep2,
-        &exit_item,
-    ];
-    let menu = Menu::with_items(app, &items).map_err(|error| error.to_string())?;
-    window.popup_menu(&menu).map_err(|error| error.to_string())
 }
 
-/// One handler for every menu (tray + context popup): the tray listener is
-/// app-wide, so popup clicks land here too. Settings-related picks are handed
-/// back to the webview, which owns the persisted state.
+/// The state the cat window handed over when it opened the menu. The menu
+/// webview reads it once on load; nothing polls.
+static MENU_STATE: Mutex<Option<MenuState>> = Mutex::new(None);
+
+/// Opens the designed menu popup at the cursor. The window is built on a
+/// background thread (building webviews on the main thread deadlocks) and
+/// destroyed on close, so it costs nothing while unused.
+#[tauri::command]
+fn open_cat_menu(app: tauri::AppHandle, drink: bool, eat: bool, mood: String) {
+    if let Ok(mut state) = MENU_STATE.lock() {
+        *state = Some(MenuState {
+            drink,
+            eat,
+            mood,
+        });
+    }
+    let replacing = if let Some(existing) = app.get_webview_window("menu") {
+        let _ = existing.close();
+        true
+    } else {
+        false
+    };
+
+    std::thread::spawn(move || {
+        if replacing {
+            // Let the closed popup release the window label first.
+            std::thread::sleep(std::time::Duration::from_millis(150));
+        }
+
+        let window = WebviewWindowBuilder::new(&app, "menu", WebviewUrl::App("menu.html".into()))
+            .title("Cartner Menu")
+            .inner_size(MENU_WIDTH, MENU_HEIGHT)
+            .decorations(false)
+            .transparent(true)
+            .always_on_top(true)
+            .skip_taskbar(true)
+            .shadow(false)
+            .resizable(false)
+            .visible(false)
+            .build();
+
+        match window {
+            Ok(window) => {
+                position_menu_at_cursor(&app, &window);
+                let _ = window.show();
+                let _ = window.set_focus();
+                // Dismiss like a real context menu: focus elsewhere closes it.
+                let handle = window.clone();
+                window.on_window_event(move |event| {
+                    if let WindowEvent::Focused(false) = event {
+                        let _ = handle.close();
+                    }
+                });
+            }
+            Err(error) => eprintln!("mochi: failed to open the menu window: {error}"),
+        }
+    });
+}
+
+/// Anchors the card's top-left corner at the cursor, flipping it left/up near
+/// the screen edges. Uses physical pixels, so HiDPI screens line up too.
+fn position_menu_at_cursor(app: &tauri::AppHandle, window: &tauri::WebviewWindow) {
+    let Ok(cursor) = app.cursor_position() else {
+        return;
+    };
+    let monitor = app.monitor_from_point(cursor.x, cursor.y).ok().flatten();
+    let scale = monitor
+        .as_ref()
+        .map(|monitor| monitor.scale_factor())
+        .unwrap_or_else(|| window.scale_factor().unwrap_or(1.0));
+    let size = window.outer_size().unwrap_or_else(|_| {
+        PhysicalSize::new(
+            (MENU_WIDTH * scale).round() as u32,
+            (MENU_HEIGHT * scale).round() as u32,
+        )
+    });
+    let margin = (MENU_MARGIN * scale).round() as i32;
+    let cursor_x = cursor.x.round() as i32;
+    let cursor_y = cursor.y.round() as i32;
+    let mut x = cursor_x - margin;
+    let mut y = cursor_y - margin;
+
+    if let Some(monitor) = monitor {
+        let mon_pos = monitor.position();
+        let mon_size = monitor.size();
+        let right = mon_pos.x + mon_size.width as i32;
+        let bottom = mon_pos.y + mon_size.height as i32;
+        if x + size.width as i32 > right {
+            x = cursor_x - size.width as i32 + margin;
+        }
+        if y + size.height as i32 > bottom {
+            y = cursor_y - size.height as i32 + margin;
+        }
+        x = x.clamp(mon_pos.x, (right - size.width as i32).max(mon_pos.x));
+        y = y.clamp(mon_pos.y, (bottom - size.height as i32).max(mon_pos.y));
+    }
+
+    let _ = window.set_position(PhysicalPosition::new(x, y));
+}
+
+/// The menu webview asks for the state once, right after it loads.
+#[tauri::command]
+fn menu_state() -> MenuState {
+    MENU_STATE
+        .lock()
+        .ok()
+        .and_then(|state| state.clone())
+        .unwrap_or(MenuState {
+            drink: true,
+            eat: true,
+            mood: "normal".to_string(),
+        })
+}
+
+/// A menu row was clicked: close the popup, then act as the tray would.
+#[tauri::command]
+fn pick_menu(app: tauri::AppHandle, action: String) {
+    if let Some(window) = app.get_webview_window("menu") {
+        let _ = window.close();
+    }
+    handle_menu_event(&app, &action);
+}
+
+#[tauri::command]
+fn close_cat_menu(app: tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window("menu") {
+        let _ = window.close();
+    }
+}
+
+/// One handler for every menu (tray + context popup). Settings-related picks
+/// are handed back to the webview, which owns the persisted state.
 fn handle_menu_event(app: &tauri::AppHandle, id: &str) {
     match id {
         "show" => {
@@ -239,7 +316,10 @@ pub fn run() {
             log_line,
             toggle_settings_window,
             toggle_tasks_window,
-            show_cat_menu
+            open_cat_menu,
+            menu_state,
+            pick_menu,
+            close_cat_menu
         ])
         .setup(|app| {
             let show = MenuItem::with_id(app, "show", "Show cat", true, None::<&str>)?;

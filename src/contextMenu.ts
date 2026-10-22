@@ -36,7 +36,7 @@ export function initContextMenu(
   document.addEventListener("contextmenu", (event) => {
     event.preventDefault();
     const state = onOpen();
-    void invoke("show_cat_menu", {
+    void invoke("open_cat_menu", {
       drink: state.drink,
       eat: state.eat,
       mood: state.mood,

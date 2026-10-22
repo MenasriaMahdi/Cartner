@@ -258,8 +258,10 @@ body.pixel #cat-layer {
   animation: art-cycle 2.4s steps(3) infinite;
 }
 
+/* one static angry frame: 160-wide canvas centred inside the 110px clip */
 #art-grumpy {
-  animation: art-cycle 1.8s steps(6) infinite;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 @keyframes art-cycle {

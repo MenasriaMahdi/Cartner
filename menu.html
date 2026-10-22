@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cartner Menu</title>
+    <script>
+      (function () {
+        function report(kind, detail) {
+          try {
+            window.__TAURI_INTERNALS__.invoke("log_line", { message: kind + ": " + detail });
+          } catch (x) {
+            /* reporting unavailable */
+          }
+        }
+        window.addEventListener("error", function (e) {
+          report("js-error", e.message + " @ " + (e.filename || "?") + ":" + (e.lineno || 0));
+        });
+        window.addEventListener("unhandledrejection", function (e) {
+          report("js-reject", String(e.reason));
+        });
+      })();
+    </script>
+    <link rel="stylesheet" href="/src/menu.css" />
+  </head>
+  <body>
+    <div class="card">
+      <div class="page" id="page-main">
+        <header class="head"><span class="paw">🐾</span>Cartner</header>
+
+        <button class="row" type="button" data-pick="drink">
+          <span class="ico">💧</span><span class="lbl">Drink reminder</span><span class="check" id="check-drink"></span>
+        </button>
+        <button class="row" type="button" data-pick="eat">
+          <span class="ico">🍖</span><span class="lbl">Eat reminder</span><span class="check" id="check-eat"></span>
+        </button>
+
+        <div class="rule"></div>
+
+        <button class="row" type="button" id="mood-open">
+          <span class="ico">😺</span><span class="lbl">Mood</span><span class="val" id="mood-value">Normal</span><span class="chev">›</span>
+        </button>
+
+        <div class="rule"></div>
+
+        <button class="row" type="button" data-pick="tasks">
+          <span class="ico">📝</span><span class="lbl">Tasks</span>
+        </button>
+        <button class="row" type="button" data-pick="settings">
+          <span class="ico">⚙️</span><span class="lbl">Settings</span>
+        </button>
+
+        <div class="rule"></div>
+
+        <button class="row danger" type="button" data-pick="exit">
+          <span class="ico">⏻</span><span class="lbl">Exit</span>
+        </button>
+      </div>
+
+      <div class="page" id="page-mood" hidden>
+        <header class="head">Mood</header>
+
+        <button class="row" type="button" data-pick="mood-normal">
+          <span class="ico">😌</span><span class="lbl">Normal</span><span class="check" data-check="normal"></span>
+        </button>
+        <button class="row" type="button" data-pick="mood-happy">
+          <span class="ico">💗</span><span class="lbl">Happy</span><span class="check" data-check="happy"></span>
+        </button>
+        <button class="row" type="button" data-pick="mood-sleepy">
+          <span class="ico">😴</span><span class="lbl">Sleepy</span><span class="check" data-check="sleepy"></span>
+        </button>
+        <button class="row" type="button" data-pick="mood-grumpy">
+          <span class="ico">😾</span><span class="lbl">Grumpy</span><span class="check" data-check="grumpy"></span>
+        </button>
+        <button class="row" type="button" data-pick="mood-sad">
+          <span class="ico">😢</span><span class="lbl">Sad</span><span class="check" data-check="sad"></span>
+        </button>
+
+        <div class="rule"></div>
+
+        <button class="row" type="button" id="mood-back">
+          <span class="ico">‹</span><span class="lbl">Back</span>
+        </button>
+      </div>
+    </div>
+    <script type="module" src="/src/menu.ts"></script>
+  </body>
+</html>

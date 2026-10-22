@@ -17,6 +17,7 @@ export default defineConfig({
         main: "index.html",
         settings: "settings.html",
         tasks: "tasks.html",
+        menu: "menu.html",
       },
     },
   },

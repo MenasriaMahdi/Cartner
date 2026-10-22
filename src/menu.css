@@ -1,0 +1,145 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  color: #3d3129;
+  cursor: default;
+}
+
+/* The 6px gutter is transparent; the card's shadow lives there. */
+.card {
+  position: fixed;
+  inset: 6px;
+  display: flex;
+  flex-direction: column;
+  padding: 5px 6px 6px;
+  background: linear-gradient(180deg, #fffdf8 0%, #fff5e9 100%);
+  border: 1px solid #ecd3b6;
+  border-radius: 14px;
+  box-shadow:
+    0 14px 30px rgba(90, 60, 20, 0.26),
+    0 2px 6px rgba(90, 60, 20, 0.12);
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 0.12s ease-out,
+    transform 0.12s ease-out;
+}
+
+body.ready .card {
+  opacity: 1;
+  transform: none;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+.page[hidden] {
+  display: none;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 9px;
+  font: 700 10px/1 system-ui, sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #b9997a;
+}
+
+.head .paw {
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 29px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font: 500 12.5px/1 system-ui, sans-serif;
+  color: #3d3129;
+  text-align: left;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.row:hover {
+  background: #ffeedb;
+}
+
+.row:active {
+  background: #ffe2c2;
+}
+
+.row.danger:hover {
+  background: #ffe7e2;
+  color: #b93b2f;
+}
+
+.ico {
+  width: 17px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 13px;
+}
+
+.lbl {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.check {
+  width: 13px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2f9e44;
+}
+
+.val {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ae9070;
+}
+
+.chev {
+  font-size: 14px;
+  line-height: 1;
+  color: #bda98f;
+  margin-left: 1px;
+}
+
+.rule {
+  height: 1px;
+  flex-shrink: 0;
+  margin: 3px 8px;
+  background: #f2e1cd;
+}
+
+/* Five moods fill the same card height as the main page. */
+#page-mood .row {
+  height: 33px;
+}
