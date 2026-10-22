@@ -68,7 +68,7 @@ export function applyReminderSettings(s: AppSettings): void {
 async function fireReminder(kind: ReminderKind): Promise<void> {
   const message = MESSAGES[kind];
   showBubble(message);
-  pulseReminder();
+  pulseReminder(kind);
   try {
     let granted = await isPermissionGranted();
     if (!granted) {

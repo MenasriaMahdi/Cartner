@@ -1,4 +1,4 @@
-export type CatState = "idle" | "walking" | "reminder";
+export type CatState = "idle" | "walking" | "reminder" | "eat" | "drink";
 
 export interface ReminderSettings {
   enabled: boolean;
@@ -14,7 +14,7 @@ export interface AppSettings {
   drinkReminder: ReminderSettings;
   eatReminder: ReminderSettings;
   catPosition: CatPosition | null;
-  /** 8-bit pixel sprite instead of the classic hand-drawn cat. */
+  /** Hand-drawn pixel-art skin instead of the classic SVG cat. */
   pixelCat: boolean;
 }
 

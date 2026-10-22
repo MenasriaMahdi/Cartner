@@ -102,7 +102,9 @@ body {
 }
 
 /* --- poke & reminder wiggle --- */
-#cat-layer.reminder {
+#cat-layer.reminder,
+#cat-layer.eat,
+#cat-layer.drink {
   animation: wiggle 1.2s ease-in-out 1;
 }
 
@@ -177,19 +179,19 @@ body.pixel #cat-layer {
 }
 
 /* idle sway (4 frames) + blink overlay (closed-eyes frame) */
-#cat-art:not(.walking):not(.reminder):not(.poke) #strip-idle {
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink) #strip-idle {
   display: block;
 }
 
-#cat-art:not(.walking):not(.reminder):not(.poke) #art-idle {
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink) #art-idle {
   animation: art-cycle 2.4s steps(4) infinite;
 }
 
-#cat-art:not(.walking):not(.reminder):not(.poke) #strip-blink {
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink) #strip-blink {
   display: block;
 }
 
-#cat-art:not(.walking):not(.reminder):not(.poke) #art-blink {
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink) #art-blink {
   opacity: 0;
   animation: art-blink 5.6s steps(1) infinite;
 }
@@ -199,7 +201,7 @@ body.pixel #cat-layer {
 }
 
 #cat-art.walking #art-walk {
-  animation: art-cycle 0.72s steps(6) infinite;
+  animation: art-cycle 0.72s steps(7) infinite;
 }
 
 #cat-art.reminder #strip-alert {
@@ -208,6 +210,23 @@ body.pixel #cat-layer {
 
 #cat-art.poke #strip-happy {
   display: block;
+}
+
+/* eat: 4-frame chew over the red bowl; drink: 2-frame lap at the blue bowl */
+#cat-art.eat #strip-eat {
+  display: block;
+}
+
+#cat-art.eat #art-eat {
+  animation: art-cycle 0.8s steps(4) infinite;
+}
+
+#cat-art.drink #strip-drink {
+  display: block;
+}
+
+#cat-art.drink #art-drink {
+  animation: art-cycle 0.9s steps(2) infinite;
 }
 
 @keyframes art-cycle {

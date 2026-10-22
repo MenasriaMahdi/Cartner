@@ -8,12 +8,16 @@ const bubble = requireElement("bubble");
 
 let bubbleTimer: ReturnType<typeof setTimeout> | undefined;
 let reminderTimer: ReturnType<typeof setTimeout> | undefined;
+let pokeTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** Mutually exclusive state classes (idle = no class at all). */
+const STATE_CLASSES = ["walking", "reminder", "eat", "drink"];
 
 export function setCatState(state: CatState): void {
   for (const el of [catLayer, catArt]) {
     if (el === null) continue;
-    el.classList.remove("walking", "reminder");
-    if (state === "walking" || state === "reminder") {
+    el.classList.remove(...STATE_CLASSES);
+    if (state !== "idle") {
       el.classList.add(state);
     }
   }
@@ -22,7 +26,8 @@ export function setCatState(state: CatState): void {
 export function pokeCat(): void {
   for (const el of [catLayer, catArt]) {
     if (el === null) continue;
-    el.classList.remove("poke");
+    // petting interrupts a reminder reaction
+    el.classList.remove("poke", "reminder", "eat", "drink");
   }
   // force a reflow so the one-shot squash animation restarts
   void catLayer.getBoundingClientRect();
@@ -30,6 +35,14 @@ export function pokeCat(): void {
     if (el === null) continue;
     el.classList.add("poke");
   }
+  clearTimeout(pokeTimer);
+  // the class also selects the art-skin happy frame, so it must be dropped
+  pokeTimer = setTimeout(() => {
+    for (const el of [catLayer, catArt]) {
+      if (el === null) continue;
+      el.classList.remove("poke");
+    }
+  }, 500);
 }
 
 export function showBubble(text: string): void {
@@ -39,10 +52,14 @@ export function showBubble(text: string): void {
   bubbleTimer = setTimeout(() => bubble.classList.remove("show"), 4200);
 }
 
-export function pulseReminder(): void {
-  setCatState("reminder");
+/** Which reaction plays: generic alert, or the matching food animation. */
+export type ReminderAnim = "alert" | "drink" | "eat";
+
+export function pulseReminder(kind: ReminderAnim = "alert"): void {
+  setCatState(kind === "alert" ? "reminder" : kind);
   clearTimeout(reminderTimer);
-  reminderTimer = setTimeout(() => setCatState("idle"), 1300);
+  // eating/drinking gets a longer window so the loop reads
+  reminderTimer = setTimeout(() => setCatState("idle"), kind === "alert" ? 1300 : 2800);
 }
 
 // Idle wandering: occasionally take a short stroll in place.
