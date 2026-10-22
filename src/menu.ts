@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { requireElement } from "./dom";
 
 interface MenuState {
@@ -70,6 +71,12 @@ function init(): void {
   document.addEventListener("contextmenu", (event) => event.preventDefault());
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") close();
+  });
+
+  // Reopening the warm popup: refresh checks and start on the main page.
+  void listen<MenuState>("cartner:menu-opened", (event) => {
+    applyState(event.payload);
+    showPage("main");
   });
 
   void invoke<MenuState>("menu_state")

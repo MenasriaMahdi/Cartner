@@ -25,59 +25,74 @@ struct MenuState {
 /// webview reads it once on load; nothing polls.
 static MENU_STATE: Mutex<Option<MenuState>> = Mutex::new(None);
 
-/// Opens the designed menu popup at the cursor. The window is built on a
-/// background thread (building webviews on the main thread deadlocks) and
-/// destroyed on close, so it costs nothing while unused.
+/// Opens the designed menu popup at the cursor. The window is pre-built once
+/// (hidden) at startup and only positioned + shown afterwards, so a right
+/// click is instant instead of paying for webview creation each time.
 #[tauri::command]
 fn open_cat_menu(app: tauri::AppHandle, drink: bool, eat: bool, mood: String) {
-    if let Ok(mut state) = MENU_STATE.lock() {
-        *state = Some(MenuState {
-            drink,
-            eat,
-            mood,
-        });
-    }
-    let replacing = if let Some(existing) = app.get_webview_window("menu") {
-        let _ = existing.close();
-        true
-    } else {
-        false
+    let state = MenuState {
+        drink,
+        eat,
+        mood,
     };
+    if let Ok(mut slot) = MENU_STATE.lock() {
+        *slot = Some(state.clone());
+    }
 
+    if let Some(window) = app.get_webview_window("menu") {
+        show_menu_window(&app, &window, &state);
+        return;
+    }
+
+    // First use before the warm window finished building: wait for it, and
+    // only build one ourselves if it is really gone (e.g. Alt+F4 closed it).
     std::thread::spawn(move || {
-        if replacing {
-            // Let the closed popup release the window label first.
-            std::thread::sleep(std::time::Duration::from_millis(150));
-        }
-
-        let window = WebviewWindowBuilder::new(&app, "menu", WebviewUrl::App("menu.html".into()))
-            .title("Cartner Menu")
-            .inner_size(MENU_WIDTH, MENU_HEIGHT)
-            .decorations(false)
-            .transparent(true)
-            .always_on_top(true)
-            .skip_taskbar(true)
-            .shadow(false)
-            .resizable(false)
-            .visible(false)
-            .build();
-
-        match window {
-            Ok(window) => {
-                position_menu_at_cursor(&app, &window);
-                let _ = window.show();
-                let _ = window.set_focus();
-                // Dismiss like a real context menu: focus elsewhere closes it.
-                let handle = window.clone();
-                window.on_window_event(move |event| {
-                    if let WindowEvent::Focused(false) = event {
-                        let _ = handle.close();
-                    }
-                });
+        for _ in 0..20 {
+            std::thread::sleep(std::time::Duration::from_millis(50));
+            if let Some(window) = app.get_webview_window("menu") {
+                show_menu_window(&app, &window, &state);
+                return;
             }
+        }
+        match create_menu_window(&app) {
+            Ok(window) => show_menu_window(&app, &window, &state),
             Err(error) => eprintln!("mochi: failed to open the menu window: {error}"),
         }
     });
+}
+
+fn show_menu_window(app: &tauri::AppHandle, window: &tauri::WebviewWindow, state: &MenuState) {
+    position_menu_at_cursor(app, window);
+    let _ = window.show();
+    let _ = window.set_focus();
+    // The page is already loaded; this just refreshes checks and resets the page.
+    let _ = window.emit("cartner:menu-opened", state);
+}
+
+/// Builds the popup once. Must not run on the main thread (that deadlocks).
+fn create_menu_window(app: &tauri::AppHandle) -> tauri::Result<tauri::WebviewWindow> {
+    let window = WebviewWindowBuilder::new(app, "menu", WebviewUrl::App("menu.html".into()))
+        .title("Cartner Menu")
+        .inner_size(MENU_WIDTH, MENU_HEIGHT)
+        .decorations(false)
+        .transparent(true)
+        .always_on_top(true)
+        .skip_taskbar(true)
+        .shadow(false)
+        .resizable(false)
+        .focused(false)
+        .visible(false)
+        .build()?;
+
+    // Dismiss like a real context menu: focus elsewhere hides it. A hidden
+    // webview costs no CPU, so the next open stays instant.
+    let handle = window.clone();
+    window.on_window_event(move |event| {
+        if let WindowEvent::Focused(false) = event {
+            let _ = handle.hide();
+        }
+    });
+    Ok(window)
 }
 
 /// Anchors the card's top-left corner at the cursor, flipping it left/up near
@@ -135,11 +150,11 @@ fn menu_state() -> MenuState {
         })
 }
 
-/// A menu row was clicked: close the popup, then act as the tray would.
+/// A menu row was clicked: hide the popup, then act as the tray would.
 #[tauri::command]
 fn pick_menu(app: tauri::AppHandle, action: String) {
     if let Some(window) = app.get_webview_window("menu") {
-        let _ = window.close();
+        let _ = window.hide();
     }
     handle_menu_event(&app, &action);
 }
@@ -147,7 +162,7 @@ fn pick_menu(app: tauri::AppHandle, action: String) {
 #[tauri::command]
 fn close_cat_menu(app: tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("menu") {
-        let _ = window.close();
+        let _ = window.hide();
     }
 }
 
@@ -353,6 +368,15 @@ pub fn run() {
                     });
                 }
             }
+
+            // Build the context-menu popup once, hidden, so the first right
+            // click does not pay for webview startup.
+            let warm = app.handle().clone();
+            std::thread::spawn(move || {
+                if let Err(error) = create_menu_window(&warm) {
+                    eprintln!("mochi: could not pre-build the menu window: {error}");
+                }
+            });
 
             Ok(())
         })
