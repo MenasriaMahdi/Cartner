@@ -258,6 +258,10 @@ body.pixel #cat-layer {
   animation: art-cycle 2.4s steps(3) infinite;
 }
 
+#art-grumpy {
+  animation: art-cycle 1.8s steps(6) infinite;
+}
+
 @keyframes art-cycle {
   from { transform: translateX(0); }
   to { transform: translateX(-100%); }
