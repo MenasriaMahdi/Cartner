@@ -1,6 +1,6 @@
-# Mochi 🐱
+# Cartner 🐱
 
-A tiny, lightweight desktop cat companion for Windows. Mochi sits on your
+A tiny, lightweight desktop cat companion for Windows. Cartner sits on your
 desktop, walks around a little, pokes when clicked — and kindly reminds you
 to drink water and eat.
 
@@ -37,7 +37,7 @@ Build a debug binary without an installer:
 
 ```powershell
 npm run tauri build -- --debug --no-bundle
-# → src-tauri/target/debug/mochi.exe
+# → src-tauri/target/debug/mochi.exe   (Cargo binary name stays `mochi`)
 ```
 
 Full release build (installers in `src-tauri/target/release/bundle/`):

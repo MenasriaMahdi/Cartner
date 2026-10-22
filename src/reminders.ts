@@ -14,8 +14,8 @@ const MESSAGES: Record<ReminderKind, string> = {
 };
 
 const TITLES: Record<ReminderKind, string> = {
-  drink: "Mochi says: hydrate!",
-  eat: "Mochi says: snack time!",
+  drink: "Cartner says: hydrate!",
+  eat: "Cartner says: snack time!",
 };
 
 let drinkTimer: ReturnType<typeof setTimeout> | undefined;

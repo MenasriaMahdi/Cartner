@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mochi</title>
+    <title>Cartner</title>
     <script>
       (function () {
         function report(kind, detail) {
@@ -25,7 +25,7 @@
   </head>
   <body>
     <div id="app">
-      <svg id="cat" viewBox="0 0 120 120" width="120" height="120" aria-label="Mochi the cat">
+      <svg id="cat" viewBox="0 0 120 120" width="120" height="120" aria-label="Cartner the cat">
         <g id="cat-shadow">
           <ellipse cx="60" cy="112.5" rx="24" ry="3.5" fill="rgba(60,42,28,0.18)" />
         </g>
@@ -71,24 +71,37 @@
           </g>
         </g>
       </svg>
-      <div id="cat-art" aria-hidden="true">
+      <div id="cat-art" data-mood="normal" aria-hidden="true">
         <span class="strip" id="strip-idle"><img id="art-idle" src="/cat-art/idle.png" width="512" height="128" alt="" draggable="false" /></span>
-        <span class="strip" id="strip-blink"><img id="art-blink" src="/cat-art/blink.png" width="128" height="128" alt="" draggable="false" /></span>
         <span class="strip" id="strip-walk"><img id="art-walk" src="/cat-art/walk.png" width="896" height="128" alt="" draggable="false" /></span>
         <span class="strip" id="strip-alert"><img id="art-alert" src="/cat-art/alert.png" width="128" height="128" alt="" draggable="false" /></span>
-        <span class="strip" id="strip-happy"><img id="art-happy" src="/cat-art/happy.png" width="128" height="128" alt="" draggable="false" /></span>
+        <span class="strip" id="strip-happy"><img id="art-happy" src="/cat-art/happy.png" width="512" height="128" alt="" draggable="false" /></span>
         <span class="strip" id="strip-eat"><img id="art-eat" src="/cat-art/eat.png" width="512" height="128" alt="" draggable="false" /></span>
         <span class="strip" id="strip-drink"><img id="art-drink" src="/cat-art/drink.png" width="256" height="128" alt="" draggable="false" /></span>
+        <span class="strip" id="strip-sleepy"><img id="art-sleepy" src="/cat-art/sleepy.png" width="512" height="128" alt="" draggable="false" /></span>
+        <span class="strip" id="strip-grumpy"><img id="art-grumpy" src="/cat-art/grumpy.png" width="128" height="128" alt="" draggable="false" /></span>
+        <span class="strip" id="strip-sad"><img id="art-sad" src="/cat-art/sad.png" width="384" height="128" alt="" draggable="false" /></span>
       </div>
       <div id="bubble" role="status" aria-live="polite"></div>
       <div id="menu" role="menu" hidden>
-        <button type="button" class="menu-item" id="menu-drink" role="menuitem">💧 Drink reminder<span id="menu-drink-check" class="check"></span></button>
-        <button type="button" class="menu-item" id="menu-eat" role="menuitem">🍖 Eat reminder<span id="menu-eat-check" class="check"></span></button>
-        <div class="menu-sep"></div>
-        <button type="button" class="menu-item" id="menu-tasks" role="menuitem">📝 Tasks</button>
-        <button type="button" class="menu-item" id="menu-settings" role="menuitem">⚙️ Settings</button>
-        <div class="menu-sep"></div>
-        <button type="button" class="menu-item danger" id="menu-exit" role="menuitem">Exit</button>
+        <div class="menu-page" id="menu-page-main">
+          <button type="button" class="menu-item" id="menu-drink" role="menuitem">💧 Drink reminder<span id="menu-drink-check" class="check"></span></button>
+          <button type="button" class="menu-item" id="menu-eat" role="menuitem">🍖 Eat reminder<span id="menu-eat-check" class="check"></span></button>
+          <button type="button" class="menu-item" id="menu-mood" role="menuitem">😺 Mood<span id="menu-mood-value" class="check"></span></button>
+          <button type="button" class="menu-item" id="menu-tasks" role="menuitem">📝 Tasks</button>
+          <button type="button" class="menu-item" id="menu-settings" role="menuitem">⚙️ Settings</button>
+          <div class="menu-sep"></div>
+          <button type="button" class="menu-item danger" id="menu-exit" role="menuitem">Exit</button>
+        </div>
+        <div class="menu-page" id="menu-page-mood" hidden>
+          <button type="button" class="menu-item" data-mood="normal">😌 Normal<span class="check"></span></button>
+          <button type="button" class="menu-item" data-mood="happy">💗 Happy<span class="check"></span></button>
+          <button type="button" class="menu-item" data-mood="sleepy">😴 Sleepy<span class="check"></span></button>
+          <button type="button" class="menu-item" data-mood="grumpy">😾 Grumpy<span class="check"></span></button>
+          <button type="button" class="menu-item" data-mood="sad">😢 Sad<span class="check"></span></button>
+          <div class="menu-sep"></div>
+          <button type="button" class="menu-item" id="menu-mood-back" role="menuitem">← Back</button>
+        </div>
       </div>
     </div>
     <script type="module" src="/src/main.ts"></script>

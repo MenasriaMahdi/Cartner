@@ -1,5 +1,8 @@
 export type CatState = "idle" | "walking" | "reminder" | "eat" | "drink";
 
+/** Persistent mood picked from the right-click menu. */
+export type CatMood = "normal" | "happy" | "sleepy" | "grumpy" | "sad";
+
 export interface ReminderSettings {
   enabled: boolean;
   intervalMinutes: number;
@@ -16,6 +19,7 @@ export interface AppSettings {
   catPosition: CatPosition | null;
   /** Hand-drawn pixel-art skin instead of the classic SVG cat. */
   pixelCat: boolean;
+  catMood: CatMood;
 }
 
 export interface Task {

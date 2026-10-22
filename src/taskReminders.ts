@@ -68,7 +68,7 @@ async function fireTask(task: Task): Promise<void> {
       granted = (await requestPermission()) === "granted";
     }
     if (granted) {
-      sendNotification({ title: "Mochi task reminder 🐱", body: task.title });
+      sendNotification({ title: "Cartner task reminder 🐱", body: task.title });
     }
   } catch (error) {
     // the speech bubble already covers this; native notification is a bonus

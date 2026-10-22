@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { PhysicalPosition } from "@tauri-apps/api/dpi";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { startIdleCycle } from "./cat";
+import { setCatMood, startIdleCycle } from "./cat";
 import { initContextMenu, setMenuChecks } from "./contextMenu";
 import { initDragging } from "./drag";
 import { applyReminderSettings } from "./reminders";
@@ -28,10 +28,11 @@ if (savedPosition !== null) {
 
 function applySkin(s: AppSettings): void {
   document.body.classList.toggle("pixel", s.pixelCat);
+  setCatMood(s.catMood);
 }
 
 function refreshMenuChecks(): void {
-  setMenuChecks(settings.drinkReminder.enabled, settings.eatReminder.enabled);
+  setMenuChecks(settings.drinkReminder.enabled, settings.eatReminder.enabled, settings.catMood);
 }
 
 function toggleReminder(kind: "drink" | "eat"): void {
@@ -55,6 +56,7 @@ initContextMenu({
   onMenuOpen: refreshMenuChecks,
   onToggleDrink: () => toggleReminder("drink"),
   onToggleEat: () => toggleReminder("eat"),
+  onSetMood: (mood) => saveSettings({ ...settings, catMood: mood }),
   onOpenSettings: () => openPanel("toggle_settings_window"),
   onOpenTasks: () => openPanel("toggle_tasks_window"),
   onExit: () => {

@@ -1,5 +1,5 @@
 import { requireElement } from "./dom";
-import type { CatState } from "./types";
+import type { CatMood, CatState } from "./types";
 
 const catLayer = requireElement("cat-layer");
 // The hand-drawn art skin mirrors the same state classes as the SVG layers.
@@ -23,11 +23,16 @@ export function setCatState(state: CatState): void {
   }
 }
 
+export function setCatMood(mood: CatMood): void {
+  if (catArt === null) return;
+  catArt.dataset.mood = mood;
+}
+
 export function pokeCat(): void {
   for (const el of [catLayer, catArt]) {
     if (el === null) continue;
-    // petting interrupts a reminder reaction
-    el.classList.remove("poke", "reminder", "eat", "drink");
+    // petting interrupts a stroll or a reminder reaction
+    el.classList.remove("poke", "walking", "reminder", "eat", "drink");
   }
   // force a reflow so the one-shot squash animation restarts
   void catLayer.getBoundingClientRect();

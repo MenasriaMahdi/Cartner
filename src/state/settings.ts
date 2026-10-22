@@ -1,6 +1,7 @@
 import { emit } from "@tauri-apps/api/event";
 import {
   type AppSettings,
+  type CatMood,
   type ReminderSettings,
   REMINDER_MINUTES_MAX,
   REMINDER_MINUTES_MIN,
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   eatReminder: { enabled: true, intervalMinutes: 240 },
   catPosition: null,
   pixelCat: false,
+  catMood: "normal",
 };
 
 export function sanitizeInterval(value: unknown, fallback: number): number {
@@ -28,6 +30,12 @@ function sanitizeReminder(raw: unknown, fallback: ReminderSettings): ReminderSet
     enabled: typeof r["enabled"] === "boolean" ? r["enabled"] : fallback.enabled,
     intervalMinutes: sanitizeInterval(r["intervalMinutes"], fallback.intervalMinutes),
   };
+}
+
+function sanitizeMood(raw: unknown): CatMood {
+  return raw === "happy" || raw === "sleepy" || raw === "grumpy" || raw === "sad"
+    ? raw
+    : "normal";
 }
 
 export function sanitizeSettings(raw: unknown): AppSettings {
@@ -49,6 +57,7 @@ export function sanitizeSettings(raw: unknown): AppSettings {
     eatReminder: sanitizeReminder(o["eatReminder"], DEFAULT_SETTINGS.eatReminder),
     catPosition,
     pixelCat: typeof o["pixelCat"] === "boolean" ? o["pixelCat"] : DEFAULT_SETTINGS.pixelCat,
+    catMood: sanitizeMood(o["catMood"]),
   };
 }
 

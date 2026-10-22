@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mochi Tasks</title>
+    <title>Cartner Tasks</title>
     <script>
       (function () {
         function report(kind, detail) {
@@ -31,15 +31,15 @@
       </header>
       <main class="panel">
         <form id="task-form" class="composer" autocomplete="off">
-          <input type="text" id="task-title" placeholder="What should Mochi remind you about?" maxlength="120" />
+          <input type="text" id="task-title" placeholder="What should Cartner remind you about?" maxlength="120" />
           <div class="composer-row">
             <input type="datetime-local" id="task-due" title="Optional time" />
             <button type="submit" class="primary" title="Add task">➕</button>
           </div>
         </form>
-        <p id="task-empty" class="empty">No tasks yet. Mochi is napping 😴</p>
+        <p id="task-empty" class="empty">No tasks yet. Cartner is napping 😴</p>
         <ul id="task-list"></ul>
-        <p class="hint">Give a task a time and Mochi will remind you right on time 🐾</p>
+        <p class="hint">Give a task a time and Cartner will remind you right on time 🐾</p>
       </main>
     </div>
     <script type="module" src="/src/main-tasks.ts"></script>

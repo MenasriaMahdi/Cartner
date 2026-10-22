@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Mochi",
+  "productName": "Cartner",
   "version": "0.1.0",
   "identifier": "com.mahdi.mochi",
   "build": {
@@ -16,7 +16,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Mochi",
+        "title": "Cartner",
         "width": 176,
         "height": 176,
         "transparent": true,
@@ -30,7 +30,7 @@
       {
         "label": "settings",
         "url": "settings.html",
-        "title": "Mochi Settings",
+        "title": "Cartner Settings",
         "width": 300,
         "height": 280,
         "visible": false,

@@ -57,7 +57,7 @@ fn toggle_tasks_window(app: tauri::AppHandle) {
                     "tasks",
                     tauri::WebviewUrl::App("tasks.html".into()),
                 )
-                .title("Mochi Tasks")
+                .title("Cartner Tasks")
                 .inner_size(320.0, 430.0)
                 .min_inner_size(260.0, 300.0)
                 .decorations(false)
@@ -188,5 +188,5 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running mochi");
+        .expect("error while running cartner");
 }

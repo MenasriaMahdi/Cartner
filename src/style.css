@@ -178,24 +178,7 @@ body.pixel #cat-layer {
   animation: squash 0.35s ease-in-out 1;
 }
 
-/* idle sway (4 frames) + blink overlay (closed-eyes frame) */
-#cat-art:not(.walking, .reminder, .poke, .eat, .drink) #strip-idle {
-  display: block;
-}
-
-#cat-art:not(.walking, .reminder, .poke, .eat, .drink) #art-idle {
-  animation: art-cycle 2.4s steps(4) infinite;
-}
-
-#cat-art:not(.walking, .reminder, .poke, .eat, .drink) #strip-blink {
-  display: block;
-}
-
-#cat-art:not(.walking, .reminder, .poke, .eat, .drink) #art-blink {
-  opacity: 0;
-  animation: art-blink 5.6s steps(1) infinite;
-}
-
+/* transient states always override the current mood */
 #cat-art.walking #strip-walk {
   display: block;
 }
@@ -208,6 +191,7 @@ body.pixel #cat-layer {
   display: block;
 }
 
+/* poking always shows the happy hearts */
 #cat-art.poke #strip-happy {
   display: block;
 }
@@ -229,14 +213,47 @@ body.pixel #cat-layer {
   animation: art-cycle 0.9s steps(2) infinite;
 }
 
+/* moods: shown only while no transient state is playing */
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="normal"] #strip-idle {
+  display: block;
+}
+
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="happy"] #strip-happy {
+  display: block;
+}
+
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="sleepy"] #strip-sleepy {
+  display: block;
+}
+
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="grumpy"] #strip-grumpy {
+  display: block;
+}
+
+#cat-art:not(.walking, .reminder, .poke, .eat, .drink)[data-mood="sad"] #strip-sad {
+  display: block;
+}
+
+/* frame cycling: transform-only, so it stays on the GPU compositor */
+#art-idle {
+  animation: art-cycle 2.4s steps(4) infinite;
+}
+
+#art-happy {
+  animation: art-cycle 1.8s steps(4) infinite;
+}
+
+#art-sleepy {
+  animation: art-cycle 3.6s steps(4) infinite;
+}
+
+#art-sad {
+  animation: art-cycle 2.1s steps(3) infinite;
+}
+
 @keyframes art-cycle {
   from { transform: translateX(0); }
   to { transform: translateX(-100%); }
-}
-
-@keyframes art-blink {
-  0%, 90%, 97%, 100% { opacity: 0; }
-  91%, 96% { opacity: 1; }
 }
 
 /* --- speech bubble --- */
@@ -284,16 +301,26 @@ body.pixel #cat-layer {
   display: none;
 }
 
+.menu-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.menu-page[hidden] {
+  display: none;
+}
+
 .menu-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 6px 9px;
+  padding: 4px 9px;
   border: 0;
   border-radius: 7px;
   background: transparent;
-  font: 500 12.5px system-ui, sans-serif;
+  font: 500 12.5px/1.2 system-ui, sans-serif;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
