@@ -55,30 +55,35 @@ function applySkin(s: AppSettings): void {
   setCatMood(s.catMood);
 }
 
-function toggleReminder(kind: "drink" | "eat"): void {
-  const next: AppSettings = {
+function toggleReminder(id: string): void {
+  saveSettings({
     ...settings,
-    drinkReminder: { ...settings.drinkReminder },
-    eatReminder: { ...settings.eatReminder },
-  };
-  if (kind === "drink") next.drinkReminder.enabled = !next.drinkReminder.enabled;
-  else next.eatReminder.enabled = !next.eatReminder.enabled;
-  saveSettings(next); // the settings listener applies it everywhere
+    reminders: settings.reminders.map((reminder) =>
+      reminder.id === id ? { ...reminder, enabled: !reminder.enabled } : reminder,
+    ),
+  });
 }
 
 initContextMenu(
   () => {
     noteActivity();
     return {
-      drink: settings.drinkReminder.enabled,
-      eat: settings.eatReminder.enabled,
+      reminders: settings.reminders.map(({ id, emoji, label, enabled }) => ({
+        id,
+        emoji,
+        label,
+        enabled,
+      })),
       mood: settings.catMood,
     };
   },
   (action) => {
     noteActivity();
-    if (action === "drink" || action === "eat") toggleReminder(action);
-    else saveSettings({ ...settings, catMood: action.slice(5) as CatMood });
+    if (action.startsWith("reminder-")) {
+      toggleReminder(action.slice("reminder-".length));
+    } else {
+      saveSettings({ ...settings, catMood: action.slice("mood-".length) as CatMood });
+    }
   },
 );
 

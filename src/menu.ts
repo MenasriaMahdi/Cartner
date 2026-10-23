@@ -3,9 +3,15 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { requireElement } from "./dom";
 
+interface MenuReminder {
+  id: string;
+  emoji: string;
+  label: string;
+  enabled: boolean;
+}
+
 interface MenuState {
-  drink: boolean;
-  eat: boolean;
+  reminders: MenuReminder[];
   mood: string;
 }
 
@@ -21,18 +27,62 @@ function moodLabel(mood: string): string {
   return MOOD_LABELS[mood] ?? "Normal";
 }
 
-/** Fills in the check marks and the current mood, once, from Rust's snapshot. */
+/** "All 2 on" / "1 of 3 on" / "None" — the main page is one row now. */
+function summary(reminders: MenuReminder[]): string {
+  if (reminders.length === 0) return "None";
+  const on = reminders.filter((reminder) => reminder.enabled).length;
+  if (on === reminders.length) return `All ${on} on`;
+  return `${on} of ${reminders.length} on`;
+}
+
+function reminderRow(reminder: MenuReminder): HTMLButtonElement {
+  const row = document.createElement("button");
+  row.type = "button";
+  row.className = "row";
+  row.dataset["pick"] = `reminder-${reminder.id}`;
+
+  const icon = document.createElement("span");
+  icon.className = "ico";
+  icon.textContent = reminder.emoji;
+
+  const label = document.createElement("span");
+  label.className = "lbl";
+  label.textContent = reminder.label;
+
+  const check = document.createElement("span");
+  check.className = "check";
+  check.textContent = reminder.enabled ? "✓" : "";
+
+  row.append(icon, label, check);
+  return row;
+}
+
+function renderReminders(reminders: MenuReminder[]): void {
+  const list = requireElement("reminder-list");
+  if (reminders.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "No reminders yet — add some in Settings.";
+    list.replaceChildren(empty);
+    return;
+  }
+  list.replaceChildren(...reminders.map(reminderRow));
+}
+
+/** Fills in the list, the summary and the current mood from Rust's snapshot. */
 function applyState(state: MenuState): void {
-  requireElement("check-drink").textContent = state.drink ? "✓" : "";
-  requireElement("check-eat").textContent = state.eat ? "✓" : "";
+  const reminders = Array.isArray(state.reminders) ? state.reminders : [];
+  renderReminders(reminders);
+  requireElement("reminders-value").textContent = summary(reminders);
   requireElement("mood-value").textContent = moodLabel(state.mood);
   document.querySelectorAll<HTMLElement>("[data-check]").forEach((element) => {
     element.textContent = element.dataset["check"] === state.mood ? "✓" : "";
   });
 }
 
-function showPage(page: "main" | "mood"): void {
+function showPage(page: "main" | "reminders" | "mood"): void {
   requireElement("page-main").hidden = page !== "main";
+  requireElement("page-reminders").hidden = page !== "reminders";
   requireElement("page-mood").hidden = page !== "mood";
 }
 
@@ -59,11 +109,15 @@ function init(): void {
       if (action !== undefined) pick(action);
       return;
     }
+    if (target.closest("#reminders-open") !== null) {
+      showPage("reminders");
+      return;
+    }
     if (target.closest("#mood-open") !== null) {
       showPage("mood");
       return;
     }
-    if (target.closest("#mood-back") !== null) {
+    if (target.closest("#reminders-back") !== null || target.closest("#mood-back") !== null) {
       showPage("main");
     }
   });
@@ -74,7 +128,7 @@ function init(): void {
     if (event.key === "Escape") close();
   });
 
-  // Reopening the warm popup: refresh checks and start on the main page.
+  // Reopening the warm popup: refresh the list and start on the main page.
   void listen<MenuState>("cartner:menu-opened", (event) => {
     applyState(event.payload);
     showPage("main");

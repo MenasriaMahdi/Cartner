@@ -4,80 +4,109 @@ import {
   sendNotification,
 } from "@tauri-apps/plugin-notification";
 import { pulseReminder, showBubble } from "./cat";
-import type { AppSettings, ReminderSettings } from "./types";
+import type { AppSettings, RecurringReminder } from "./types";
 
-export type ReminderKind = "drink" | "eat";
-
-const MESSAGES: Record<ReminderKind, string> = {
-  drink: "🐱 Time to drink some water!",
-  eat: "🐱 Don't forget to eat!",
-};
-
-const TITLES: Record<ReminderKind, string> = {
-  drink: "Cartner says: hydrate!",
-  eat: "Cartner says: snack time!",
-};
-
-let drinkTimer: ReturnType<typeof setTimeout> | undefined;
-let eatTimer: ReturnType<typeof setTimeout> | undefined;
-let lastScheduled: AppSettings | null = null;
-let currentSettings: AppSettings;
-
-function reminderOf(kind: ReminderKind, s: AppSettings): ReminderSettings {
-  return kind === "drink" ? s.drinkReminder : s.eatReminder;
+interface ScheduleEntry {
+  intervalMinutes: number;
+  nextAt: number;
 }
 
-function scheduleKind(kind: ReminderKind, s: AppSettings): void {
-  const r = reminderOf(kind, s);
-  if (!r.enabled) return;
-  const timer = setTimeout(() => {
-    void fireReminder(kind);
-  }, r.intervalMinutes * 60_000);
-  if (kind === "drink") drinkTimer = timer;
-  else eatTimer = timer;
-}
+const MINUTE = 60_000;
 
-function scheduleAll(s: AppSettings): void {
-  clearTimeout(drinkTimer);
-  clearTimeout(eatTimer);
-  scheduleKind("drink", s);
-  scheduleKind("eat", s);
-  lastScheduled = s;
+/**
+ * One timer for the whole list instead of one per reminder: only the reminder
+ * that is due first is armed, and firing it re-arms the next one. Nothing
+ * polls, so an idle list costs no CPU.
+ */
+let timer: ReturnType<typeof setTimeout> | undefined;
+let current: AppSettings | null = null;
+const schedule = new Map<string, ScheduleEntry>();
+
+/** The default two keep their food animations; custom ones get the alert. */
+function animationFor(reminder: RecurringReminder): "alert" | "drink" | "eat" {
+  if (reminder.id === "drink") return "drink";
+  if (reminder.id === "eat") return "eat";
+  return "alert";
 }
 
 /**
- * Re-applies reminder settings, rescheduling only when a reminder setting
- * actually changed (saving the cat position must not reset running timers).
+ * Applies the whole reminder list. Reminders whose interval and enabled state
+ * did not change keep their countdown, so toggling one thing never resets the
+ * others (and moving the cat never resets anything at all).
  */
-export function applyReminderSettings(s: AppSettings): void {
-  currentSettings = s;
-  const previous = lastScheduled;
-  if (
-    previous !== null &&
-    previous.drinkReminder.enabled === s.drinkReminder.enabled &&
-    previous.drinkReminder.intervalMinutes === s.drinkReminder.intervalMinutes &&
-    previous.eatReminder.enabled === s.eatReminder.enabled &&
-    previous.eatReminder.intervalMinutes === s.eatReminder.intervalMinutes
-  ) {
-    lastScheduled = s;
-    return;
+export function applyReminderSettings(settings: AppSettings): void {
+  current = settings;
+  const now = Date.now();
+  const ids = new Set(settings.reminders.map((reminder) => reminder.id));
+  for (const id of [...schedule.keys()]) {
+    if (!ids.has(id)) schedule.delete(id);
   }
-  scheduleAll(s);
+  for (const reminder of settings.reminders) {
+    if (!reminder.enabled) {
+      schedule.delete(reminder.id);
+      continue;
+    }
+    const existing = schedule.get(reminder.id);
+    if (existing === undefined || existing.intervalMinutes !== reminder.intervalMinutes) {
+      schedule.set(reminder.id, {
+        intervalMinutes: reminder.intervalMinutes,
+        nextAt: now + reminder.intervalMinutes * MINUTE,
+      });
+    }
+  }
+  arm(now);
 }
 
-async function fireReminder(kind: ReminderKind): Promise<void> {
-  const message = MESSAGES[kind];
-  showBubble(message);
-  pulseReminder(kind);
+function arm(now: number): void {
+  clearTimeout(timer);
+  timer = undefined;
+  let first: { id: string; nextAt: number } | null = null;
+  for (const [id, entry] of schedule) {
+    if (first === null || entry.nextAt < first.nextAt) first = { id, nextAt: entry.nextAt };
+  }
+  if (first === null) return;
+  const delay = Math.max(0, first.nextAt - now);
+  timer = setTimeout(() => {
+    void fire(first.id);
+  }, delay);
+}
+
+async function fire(id: string): Promise<void> {
+  const settings = current;
+  const entry = schedule.get(id);
+  if (settings === null || entry === undefined) return;
+  const reminder = settings.reminders.find((candidate) => candidate.id === id);
+  if (reminder === undefined || !reminder.enabled) {
+    schedule.delete(id);
+    arm(Date.now());
+    return;
+  }
+
+  showBubble(`🐱 ${reminder.label}`);
+  pulseReminder(animationFor(reminder));
+  await notify(reminder);
+
+  // Re-arm from the moment it actually fired, so a slow notification can
+  // never shorten the next interval. The entry object lives in the map, so
+  // this also updates what arm() reads below.
+  entry.nextAt = Date.now() + entry.intervalMinutes * MINUTE;
+  arm(Date.now());
+}
+
+async function notify(reminder: RecurringReminder): Promise<void> {
   try {
     let granted = await isPermissionGranted();
     if (!granted) {
       granted = (await requestPermission()) === "granted";
     }
-    if (granted) sendNotification({ title: TITLES[kind], body: message });
+    if (granted) {
+      sendNotification({
+        title: `Cartner says: ${reminder.label}`,
+        body: `🐱 ${reminder.label}`,
+      });
+    }
   } catch (error) {
     // the speech bubble already covers this; native notification is a bonus
     console.warn("mochi: native notification unavailable", error);
   }
-  scheduleKind(kind, currentSettings);
 }

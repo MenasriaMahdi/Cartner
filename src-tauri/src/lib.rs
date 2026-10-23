@@ -14,15 +14,21 @@ const MENU_HEIGHT: f64 = 252.0;
 /// Transparent gutter inside the popup window that the card shadow lives in.
 const MENU_MARGIN: f64 = 6.0;
 
-#[derive(Clone, serde::Serialize)]
-struct MenuState {
-    drink: bool,
-    eat: bool,
-    mood: String,
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+struct MenuReminder {
+    id: String,
+    emoji: String,
+    label: String,
+    enabled: bool,
 }
 
 /// The state the cat window handed over when it opened the menu. The menu
 /// webview reads it once on load; nothing polls.
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+struct MenuState {
+    reminders: Vec<MenuReminder>,
+    mood: String,
+}
 static MENU_STATE: Mutex<Option<MenuState>> = Mutex::new(None);
 
 /// Hardening for webviews we build ourselves: only bundled app pages may ever
@@ -37,12 +43,8 @@ fn is_local_url(url: &tauri::Url) -> bool {
 /// (hidden) at startup and only positioned + shown afterwards, so a right
 /// click is instant instead of paying for webview creation each time.
 #[tauri::command]
-fn open_cat_menu(app: tauri::AppHandle, drink: bool, eat: bool, mood: String) {
-    let state = MenuState {
-        drink,
-        eat,
-        mood,
-    };
+fn open_cat_menu(app: tauri::AppHandle, menu: MenuState) {
+    let state = menu;
     if let Ok(mut slot) = MENU_STATE.lock() {
         *slot = Some(state.clone());
     }
@@ -153,8 +155,7 @@ fn menu_state() -> MenuState {
         .ok()
         .and_then(|state| state.clone())
         .unwrap_or(MenuState {
-            drink: true,
-            eat: true,
+            reminders: Vec::new(),
             mood: "normal".to_string(),
         })
 }
@@ -193,15 +194,9 @@ fn handle_menu_event(app: &tauri::AppHandle, id: &str) {
         "tasks" => toggle_tasks_window(app.clone()),
         "settings" => toggle_settings_window(app.clone()),
         "exit" => app.exit(0),
-        "drink" | "eat" => {
-            println!("mochi: menu pick: {id}");
-            if let Err(error) = app.emit("cartner:menu", id) {
-                eprintln!("mochi: menu emit failed: {error}");
-            }
-        }
-        mood if mood.starts_with("mood-") => {
-            println!("mochi: menu pick: {mood}");
-            if let Err(error) = app.emit("cartner:menu", mood) {
+        action if action.starts_with("mood-") || action.starts_with("reminder-") => {
+            println!("mochi: menu pick: {action}");
+            if let Err(error) = app.emit("cartner:menu", action) {
                 eprintln!("mochi: menu emit failed: {error}");
             }
         }

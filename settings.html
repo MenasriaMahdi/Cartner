@@ -10,30 +10,22 @@
     <main class="panel">
       <h1>🐱 Cartner</h1>
       <p class="subtitle">Little reminders from your desk cat.</p>
-      <section class="reminder-row">
-        <label class="toggle">
-          <input type="checkbox" id="drink-enabled" />
-          <span>💧 Drink reminder</span>
-        </label>
-        <label class="interval">
-          every <input type="number" id="drink-interval" min="5" max="720" step="5" /> min
-        </label>
+
+      <section class="editor">
+        <div class="editor-head">
+          <span>Reminders</span>
+          <button type="button" id="add-reminder" class="ghost">＋ Add</button>
+        </div>
+        <div id="reminder-list" class="reminder-list"></div>
       </section>
-      <section class="reminder-row">
-        <label class="toggle">
-          <input type="checkbox" id="eat-enabled" />
-          <span>🍖 Eat reminder</span>
-        </label>
-        <label class="interval">
-          every <input type="number" id="eat-interval" min="5" max="720" step="5" /> min
-        </label>
-      </section>
+
       <section class="reminder-row">
         <label class="toggle">
           <input type="checkbox" id="pixel-cat" />
           <span>🐈 Pixel cat (hand-drawn)</span>
         </label>
       </section>
+
       <footer>
         <button type="button" id="save" class="primary">Save</button>
         <button type="button" id="close">Close</button>

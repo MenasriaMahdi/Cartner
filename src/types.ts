@@ -3,7 +3,12 @@ export type CatState = "idle" | "walking" | "reminder" | "eat" | "drink";
 /** Persistent mood picked from the right-click menu. */
 export type CatMood = "normal" | "happy" | "sleepy" | "grumpy" | "sad";
 
-export interface ReminderSettings {
+/** A named reminder that repeats every N minutes while it is switched on. */
+export interface RecurringReminder {
+  id: string;
+  /** One of REMINDER_EMOJIS. */
+  emoji: string;
+  label: string;
   enabled: boolean;
   intervalMinutes: number;
 }
@@ -14,8 +19,7 @@ export interface CatPosition {
 }
 
 export interface AppSettings {
-  drinkReminder: ReminderSettings;
-  eatReminder: ReminderSettings;
+  reminders: RecurringReminder[];
   catPosition: CatPosition | null;
   /** Hand-drawn pixel-art skin instead of the classic SVG cat. */
   pixelCat: boolean;
@@ -37,3 +41,19 @@ export const MAX_TASKS = 100;
 
 export const REMINDER_MINUTES_MIN = 5;
 export const REMINDER_MINUTES_MAX = 720;
+export const MAX_REMINDERS = 8;
+export const MAX_REMINDER_LABEL = 32;
+
+/** Icon picker in Settings; also the allow-list for what may be stored. */
+export const REMINDER_EMOJIS: readonly string[] = [
+  "💧",
+  "🍎",
+  "🥕",
+  "☕",
+  "💊",
+  "🧘",
+  "🚶",
+  "📚",
+  "⏰",
+  "🌿",
+];

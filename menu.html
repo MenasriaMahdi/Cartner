@@ -11,11 +11,8 @@
       <div class="page" id="page-main">
         <header class="head"><span class="paw">🐾</span>Cartner</header>
 
-        <button class="row" type="button" data-pick="drink">
-          <span class="ico">💧</span><span class="lbl">Drink reminder</span><span class="check" id="check-drink"></span>
-        </button>
-        <button class="row" type="button" data-pick="eat">
-          <span class="ico">🍖</span><span class="lbl">Eat reminder</span><span class="check" id="check-eat"></span>
+        <button class="row" type="button" id="reminders-open">
+          <span class="ico">🔔</span><span class="lbl">Reminders</span><span class="val" id="reminders-value"></span><span class="chev">›</span>
         </button>
 
         <div class="rule"></div>
@@ -37,6 +34,18 @@
 
         <button class="row danger" type="button" data-pick="exit">
           <span class="ico">⏻</span><span class="lbl">Exit</span>
+        </button>
+      </div>
+
+      <div class="page" id="page-reminders" hidden>
+        <header class="head">Reminders</header>
+
+        <div class="scroll" id="reminder-list"></div>
+
+        <div class="rule"></div>
+
+        <button class="row" type="button" id="reminders-back">
+          <span class="ico">‹</span><span class="lbl">Back</span>
         </button>
       </div>
 

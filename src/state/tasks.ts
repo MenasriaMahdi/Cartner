@@ -4,18 +4,20 @@ import { type Task, MAX_TASKS } from "../types";
 const STORAGE_KEY = "mochi.tasks.v1";
 export const TASKS_CHANGED_EVENT = "mochi:tasks-changed";
 
-/** Matches the maxlength of the task form, so storage can never hold more. */
-const MAX_TITLE_LENGTH = 120;
-
 export function randomId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
 function asRecord(v: unknown): Record<string, unknown> {
-  return typeof v === "object" && v !== null ? (v as Record<string, unknown>) : {};
+  return typeof v === "object" && v !== null
+    ? (v as Record<string, unknown>)
+    : {};
 }
 
 function finitePosNumber(v: unknown): number | undefined {
@@ -24,8 +26,7 @@ function finitePosNumber(v: unknown): number | undefined {
 
 function sanitizeTask(raw: unknown): Task | null {
   const o = asRecord(raw);
-  const title =
-    typeof o["title"] === "string" ? o["title"].trim().slice(0, MAX_TITLE_LENGTH) : "";
+  const title = typeof o["title"] === "string" ? o["title"].trim() : "";
   if (title === "") return null;
   return {
     id: typeof o["id"] === "string" && o["id"] !== "" ? o["id"] : randomId(),
@@ -40,14 +41,10 @@ function sanitizeTask(raw: unknown): Task | null {
 export function sanitizeTasks(raw: unknown): Task[] {
   const list = Array.isArray(raw) ? raw : [];
   const tasks: Task[] = [];
-  const seenIds = new Set<string>();
   for (const item of list) {
     if (tasks.length >= MAX_TASKS) break;
     const task = sanitizeTask(item);
-    // Deduplicate by id: garbage from earlier builds must not stack up.
-    if (task === null || seenIds.has(task.id)) continue;
-    seenIds.add(task.id);
-    tasks.push(task);
+    if (task !== null) tasks.push(task);
   }
   return tasks;
 }

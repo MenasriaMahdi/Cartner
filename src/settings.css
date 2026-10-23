@@ -32,6 +32,114 @@ h1 {
   border-top: 1px solid #f0decb;
 }
 
+/* --- reminder list editor --- */
+
+.editor {
+  padding: 0 0 4px;
+  border-top: 1px solid #f0decb;
+}
+
+.editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a5876a;
+}
+
+.ghost {
+  padding: 3px 10px;
+  border: 1px solid #e0cbb2;
+  border-radius: 7px;
+  background: #fff;
+  font: 600 11.5px system-ui, sans-serif;
+  color: #3d3129;
+  cursor: pointer;
+}
+
+.ghost:hover {
+  background: #ffeedd;
+}
+
+.ghost:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.reminder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 216px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.reminder-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.reminder-list::-webkit-scrollbar-thumb {
+  background: #e7d3bc;
+  border-radius: 3px;
+}
+
+.reminder-item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 54px 18px 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.reminder-item .emoji,
+.reminder-item .label,
+.reminder-item .interval {
+  width: 100%;
+  padding: 4px 5px;
+  border: 1px solid #e0cbb2;
+  border-radius: 6px;
+  background: #fff;
+  font: 12px system-ui, sans-serif;
+  color: #3d3129;
+}
+
+.reminder-item .emoji {
+  font-size: 14px;
+  text-align: center;
+}
+
+.reminder-item .label::placeholder {
+  color: #b9a48d;
+}
+
+.reminder-item .enabled {
+  accent-color: #e0913f;
+  width: 15px;
+  height: 15px;
+  justify-self: center;
+}
+
+.reminder-item .remove {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #b08e6e;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.reminder-item .remove:hover {
+  background: #ffe3d6;
+  color: #b93b2f;
+}
+
 .toggle {
   display: flex;
   align-items: center;

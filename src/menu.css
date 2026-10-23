@@ -108,6 +108,8 @@ body.ready .card {
 .lbl {
   flex: 1;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .check {
@@ -142,4 +144,39 @@ body.ready .card {
 /* Five moods fill the same card height as the main page. */
 #page-mood .row {
   height: 33px;
+}
+
+/* The main page lost its second reminder row; taller rows keep the card full. */
+#page-main .row {
+  height: 35px;
+}
+
+/* The reminders page lists any number of items; it scrolls past ~5. */
+#page-reminders {
+  min-height: 0;
+}
+
+#page-reminders .scroll {
+  display: flex;
+  flex-direction: column;
+  max-height: 171px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#page-reminders .scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+#page-reminders .scroll::-webkit-scrollbar-thumb {
+  background: #e7d3bc;
+  border-radius: 3px;
+}
+
+#page-reminders .empty {
+  margin: 0;
+  padding: 12px 9px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: #9c8a77;
 }
