@@ -1,4 +1,4 @@
-# Draws the placeholder Mochi app icon (a simple cat face) with GDI+.
+﻿# Draws the placeholder Cartner app icon (a simple cat face) with GDI+.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-icon.ps1
 Add-Type -AssemblyName System.Drawing
 
@@ -78,3 +78,4 @@ New-Item -ItemType Directory -Force -Path (Split-Path -Parent $outPath) | Out-Nu
 $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
 $bmp.Dispose()
 Write-Host "icon written to $outPath"
+

@@ -10,8 +10,8 @@ import {
   REMINDER_MINUTES_MIN,
 } from "../types";
 
-const STORAGE_KEY = "mochi.settings.v1";
-export const SETTINGS_CHANGED_EVENT = "mochi:settings-changed";
+const STORAGE_KEY = "cartner.settings.v1";
+export const SETTINGS_CHANGED_EVENT = "cartner:settings-changed";
 
 /** The two reminders Cartner has always shipped with. */
 export const DEFAULT_REMINDERS: readonly RecurringReminder[] = [
@@ -140,14 +140,24 @@ export function sanitizeSettings(raw: unknown): AppSettings {
  * Marks that stored settings were rescued from the pixel-skin experiments:
  * the classic cat is forced back on exactly once, then is never overruled.
  */
-const PIXEL_RESET_KEY = "mochi.pixel-reset.v1";
+const PIXEL_RESET_KEY = "cartner.pixel-reset.v1";
+
+/** Settings written before the Cartner rename; read once, then re-saved. */
+const LEGACY_SETTINGS_KEY = "mochi.settings.v1";
+const LEGACY_PIXEL_RESET_KEY = "mochi.pixel-reset.v1";
 
 export function loadSettings(): AppSettings {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_SETTINGS_KEY);
     if (raw === null) return cloneDefaults();
     const settings = sanitizeSettings(JSON.parse(raw));
-    if (localStorage.getItem(PIXEL_RESET_KEY) === null) {
+    const pixelReset =
+      localStorage.getItem(PIXEL_RESET_KEY) ?? localStorage.getItem(LEGACY_PIXEL_RESET_KEY);
+    if (localStorage.getItem(STORAGE_KEY) === null) {
+      // First launch on the new key: re-save so the rename fully migrates.
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    }
+    if (pixelReset === null) {
       const restored = { ...settings, pixelCat: DEFAULT_SETTINGS.pixelCat };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
       localStorage.setItem(PIXEL_RESET_KEY, "1");
@@ -155,7 +165,7 @@ export function loadSettings(): AppSettings {
     }
     return settings;
   } catch (error) {
-    console.warn("mochi: failed to load settings, using defaults", error);
+    console.warn("cartner: failed to load settings, using defaults", error);
     return cloneDefaults();
   }
 }
@@ -168,10 +178,10 @@ export function saveSettings(settings: AppSettings): AppSettings {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   } catch (error) {
-    console.warn("mochi: failed to persist settings", error);
+    console.warn("cartner: failed to persist settings", error);
   }
   void emit(SETTINGS_CHANGED_EVENT, settings).catch((error) =>
-    console.warn("mochi: failed to broadcast settings", error),
+    console.warn("cartner: failed to broadcast settings", error),
   );
   return settings;
 }

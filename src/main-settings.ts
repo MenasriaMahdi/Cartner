@@ -23,7 +23,7 @@ import {
 function requireInput(id: string): HTMLInputElement {
   const el = requireElement(id);
   if (!(el instanceof HTMLInputElement)) {
-    throw new Error(`mochi: #${id} is not an input`);
+    throw new Error(`cartner: #${id} is not an input`);
   }
   return el;
 }
@@ -153,7 +153,7 @@ void listen(SETTINGS_CHANGED_EVENT, (event) => {
   if (!dirty && reminderJson(s.reminders) !== reminderJson(readList())) {
     renderList(s.reminders);
   }
-}).catch((error) => console.warn("mochi: could not listen for settings", error));
+}).catch((error) => console.warn("cartner: could not listen for settings", error));
 
 addButton.addEventListener("click", () => {
   if (listEl.children.length >= MAX_REMINDERS) return;
@@ -184,13 +184,13 @@ async function saveAndClose(): Promise<void> {
   try {
     await getCurrentWindow().close(); // Rust turns this into a hide
   } catch (error) {
-    console.warn("mochi: could not close settings window", error);
+    console.warn("cartner: could not close settings window", error);
   }
 }
 
 requireElement("save").addEventListener("click", () => void saveAndClose());
 requireElement("close").addEventListener("click", () => {
   void getCurrentWindow().close().catch((error) =>
-    console.warn("mochi: could not close settings window", error),
+    console.warn("cartner: could not close settings window", error),
   );
 });

@@ -35,11 +35,11 @@ export function initContextMenu(
     event.preventDefault();
     const state = onOpen();
     void invoke("open_cat_menu", { menu: state }).catch((error) =>
-      console.warn("mochi: could not open the menu", error),
+      console.warn("cartner: could not open the menu", error),
     );
   });
 
   void listen<string>(MENU_EVENT, (event) => {
     if (isMenuAction(event.payload)) onAction(event.payload);
-  }).catch((error) => console.warn("mochi: could not listen for menu clicks", error));
+  }).catch((error) => console.warn("cartner: could not listen for menu clicks", error));
 }

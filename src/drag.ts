@@ -16,7 +16,7 @@ export function initDragging(onPositionSettled: (pos: CatPosition) => void): voi
     event.preventDefault();
     pokeCat();
     void wnd.startDragging().catch((error) =>
-      console.warn("mochi: drag failed", error),
+      console.warn("cartner: drag failed", error),
     );
   });
 
@@ -26,5 +26,5 @@ export function initDragging(onPositionSettled: (pos: CatPosition) => void): voi
       clearTimeout(settleTimer);
       settleTimer = setTimeout(() => onPositionSettled({ x: payload.x, y: payload.y }), 450);
     })
-    .catch((error) => console.warn("mochi: could not listen for moves", error));
+    .catch((error) => console.warn("cartner: could not listen for moves", error));
 }

@@ -107,6 +107,6 @@ async function notify(reminder: RecurringReminder): Promise<void> {
     }
   } catch (error) {
     // the speech bubble already covers this; native notification is a bonus
-    console.warn("mochi: native notification unavailable", error);
+    console.warn("cartner: native notification unavailable", error);
   }
 }

@@ -20,7 +20,7 @@ const emptyEl = requireElement("task-empty");
 function requireForm(id: string): HTMLFormElement {
   const el = requireElement(id);
   if (!(el instanceof HTMLFormElement)) {
-    throw new Error(`mochi: #${id} is not a form`);
+    throw new Error(`cartner: #${id} is not a form`);
   }
   return el;
 }
@@ -28,7 +28,7 @@ function requireForm(id: string): HTMLFormElement {
 function requireInput(id: string): HTMLInputElement {
   const el = requireElement(id);
   if (!(el instanceof HTMLInputElement)) {
-    throw new Error(`mochi: #${id} is not an input`);
+    throw new Error(`cartner: #${id} is not an input`);
   }
   return el;
 }
@@ -254,11 +254,11 @@ function syncWidgetChrome(): void {
     event.preventDefault();
     void getCurrentWindow()
       .startDragging()
-      .catch((error) => console.warn("mochi: widget drag failed", error));
+      .catch((error) => console.warn("cartner: widget drag failed", error));
   });
   requireElement("widget-close").addEventListener("click", () => {
     void getCurrentWindow().close().catch((error) =>
-      console.warn("mochi: widget close failed", error),
+      console.warn("cartner: widget close failed", error),
     );
   });
 }

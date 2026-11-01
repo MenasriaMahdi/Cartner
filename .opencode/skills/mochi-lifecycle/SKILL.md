@@ -22,16 +22,16 @@ description: Architecture rules for Mochi's Tauri shell — windows, tray, comma
 ## Cross-window flow (do not fork it)
 
 - Persistence owner = whichever window calls `saveSettings()`/`saveTasks()`;
-  it broadcasts the **complete** object on `mochi:settings-changed` /
-  `mochi:tasks-changed`; all listeners re-sanitize and never re-save.
-- Event names are namespaced `mochi:*`. Registry (keep updated):
-  - `mochi:settings-changed` — full sanitized `AppSettings` payload.
-  - `mochi:tasks-changed` — full sanitized task list (max `MAX_TASKS` = 100).
+  it broadcasts the **complete** object on `cartner:settings-changed` /
+  `cartner:tasks-changed`; all listeners re-sanitize and never re-save.
+- Event names are namespaced `cartner:*`. Registry (keep updated):
+  - `cartner:settings-changed` — full sanitized `AppSettings` payload.
+  - `cartner:tasks-changed` — full sanitized task list (max `MAX_TASKS` = 100).
 
 ## Settings schema rules
 
-- One storage key per collection: `mochi.settings.v1` (reminders + cat
-  position) and `mochi.tasks.v1` (todo tasks). Bump a `vN` suffix only for breaking
+- One storage key per collection: `cartner.settings.v1` (reminders + cat
+  position) and `cartner.tasks.v1` (todo tasks). Bump a `vN` suffix only for breaking
   shape changes, and keep the old key readable for one release (migrate, then
   delete).
 - Unknown/invalid stored fields must degrade silently to defaults

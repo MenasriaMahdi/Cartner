@@ -24,7 +24,7 @@ export function initializeTaskReminders(): void {
   applyTasks(loadTasks());
   void listen(TASKS_CHANGED_EVENT, (event) => {
     applyTasks(sanitizeTasks(event.payload));
-  }).catch((error) => console.warn("mochi: could not listen for tasks", error));
+  }).catch((error) => console.warn("cartner: could not listen for tasks", error));
 }
 
 function applyTasks(next: Task[]): void {
@@ -72,7 +72,7 @@ async function fireTask(task: Task): Promise<void> {
     }
   } catch (error) {
     // the speech bubble already covers this; native notification is a bonus
-    console.warn("mochi: native notification unavailable", error);
+    console.warn("cartner: native notification unavailable", error);
   }
   tasks = saveTasks(
     tasks.map((t) =>

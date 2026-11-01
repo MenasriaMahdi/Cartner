@@ -1,8 +1,8 @@
 import { emit } from "@tauri-apps/api/event";
 import { type Task, MAX_TASKS } from "../types";
 
-const STORAGE_KEY = "mochi.tasks.v1";
-export const TASKS_CHANGED_EVENT = "mochi:tasks-changed";
+const STORAGE_KEY = "cartner.tasks.v1";
+export const TASKS_CHANGED_EVENT = "cartner:tasks-changed";
 
 export function randomId(): string {
   if (
@@ -51,11 +51,12 @@ export function sanitizeTasks(raw: unknown): Task[] {
 
 export function loadTasks(): Task[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    // The pre-rename key is read once; saving (which uses the new key) moves it over.
+    const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem("mochi.tasks.v1");
     if (raw === null) return [];
     return sanitizeTasks(JSON.parse(raw));
   } catch (error) {
-    console.warn("mochi: failed to load tasks, using empty list", error);
+    console.warn("cartner: failed to load tasks, using empty list", error);
     return [];
   }
 }
@@ -69,10 +70,10 @@ export function saveTasks(input: Task[]): Task[] {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
   } catch (error) {
-    console.warn("mochi: failed to persist tasks", error);
+    console.warn("cartner: failed to persist tasks", error);
   }
   void emit(TASKS_CHANGED_EVENT, tasks).catch((error) =>
-    console.warn("mochi: failed to broadcast tasks", error),
+    console.warn("cartner: failed to broadcast tasks", error),
   );
   return tasks;
 }

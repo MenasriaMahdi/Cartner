@@ -41,7 +41,7 @@ async function restorePosition(saved: CatPosition): Promise<void> {
       new PhysicalPosition(Math.round(saved.x), Math.round(saved.y)),
     );
   } catch (error) {
-    console.warn("mochi: could not restore cat position", error);
+    console.warn("cartner: could not restore cat position", error);
   }
 }
 
@@ -103,4 +103,4 @@ void listen(SETTINGS_CHANGED_EVENT, (event) => {
   settings = sanitizeSettings(event.payload);
   applyReminderSettings(settings);
   applySkin(settings);
-}).catch((error) => console.warn("mochi: could not listen for settings", error));
+}).catch((error) => console.warn("cartner: could not listen for settings", error));

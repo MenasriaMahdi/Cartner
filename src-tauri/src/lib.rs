@@ -66,7 +66,7 @@ fn open_cat_menu(app: tauri::AppHandle, menu: MenuState) {
         }
         match create_menu_window(&app) {
             Ok(window) => show_menu_window(&app, &window, &state),
-            Err(error) => eprintln!("mochi: failed to open the menu window: {error}"),
+            Err(error) => eprintln!("cartner: failed to open the menu window: {error}"),
         }
     });
 }
@@ -195,9 +195,9 @@ fn handle_menu_event(app: &tauri::AppHandle, id: &str) {
         "settings" => toggle_settings_window(app.clone()),
         "exit" => app.exit(0),
         action if action.starts_with("mood-") || action.starts_with("reminder-") => {
-            println!("mochi: menu pick: {action}");
+            println!("cartner: menu pick: {action}");
             if let Err(error) = app.emit("cartner:menu", action) {
-                eprintln!("mochi: menu emit failed: {error}");
+                eprintln!("cartner: menu emit failed: {error}");
             }
         }
         _ => {}
@@ -209,7 +209,7 @@ fn handle_menu_event(app: &tauri::AppHandle, id: &str) {
 /// the invisible web devtools.
 #[tauri::command]
 fn log_line(message: String) {
-    println!("mochi[web]: {message}");
+    println!("cartner[web]: {message}");
 }
 
 #[tauri::command]
@@ -264,7 +264,7 @@ fn toggle_tasks_window(app: tauri::AppHandle) {
                         let _ = window.set_focus();
                     }
                     Err(error) => {
-                        eprintln!("mochi: failed to open tasks window: {error}");
+                        eprintln!("cartner: failed to open tasks window: {error}");
                     }
                 }
             });
@@ -339,7 +339,7 @@ pub fn run() {
             let sep2 = PredefinedMenuItem::separator(app)?;
             let menu = Menu::with_items(app, &[&show, &hide, &sep1, &tasks_item, &settings, &sep2, &exit])?;
 
-            let mut tray = TrayIconBuilder::with_id("mochi-tray")
+            let mut tray = TrayIconBuilder::with_id("cartner-tray")
                 .menu(&menu)
                 .show_menu_on_left_click(true)
                 .on_menu_event(|app, event| handle_menu_event(app, event.id().as_ref()));
@@ -369,7 +369,7 @@ pub fn run() {
             std::thread::spawn(move || {
                 std::thread::sleep(std::time::Duration::from_millis(800));
                 if let Err(error) = create_menu_window(&warm) {
-                    eprintln!("mochi: could not pre-build the menu window: {error}");
+                    eprintln!("cartner: could not pre-build the menu window: {error}");
                 }
             });
 

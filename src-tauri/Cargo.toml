@@ -1,11 +1,11 @@
 [package]
-name = "mochi"
+name = "cartner"
 version = "0.1.0"
 description = "A tiny desktop cat companion"
 edition = "2021"
 
 [lib]
-name = "mochi_lib"
+name = "cartner_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

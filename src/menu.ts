@@ -88,13 +88,13 @@ function showPage(page: "main" | "reminders" | "mood"): void {
 
 function pick(action: string): void {
   void invoke("pick_menu", { action }).catch((error) =>
-    console.warn("mochi: menu pick failed", error),
+    console.warn("cartner: menu pick failed", error),
   );
 }
 
 function close(): void {
   void invoke("close_cat_menu").catch((error) =>
-    console.warn("mochi: could not close the menu", error),
+    console.warn("cartner: could not close the menu", error),
   );
 }
 
@@ -140,7 +140,7 @@ function init(): void {
       document.body.classList.add("ready");
     })
     .catch((error) => {
-      console.warn("mochi: could not load menu state", error);
+      console.warn("cartner: could not load menu state", error);
       document.body.classList.add("ready");
     });
 }
