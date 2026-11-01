@@ -1,5 +1,33 @@
-node_modules
-dist
-src-tauri/target
-src-tauri/gen
-src-tauri/tauri.conf.json.backup
+# --- Dependencies ---
+node_modules/
+
+# --- Rust / Tauri builds ---
+src-tauri/target/
+src-tauri/gen/
+
+# --- Frontend build output ---
+dist/
+dist-ssr/
+.vite/
+
+# --- Local env / secrets ---
+.env
+.env.*
+*.local
+
+# --- Logs ---
+*.log
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Tool caches / misc ---
+.tauri/
+coverage/
